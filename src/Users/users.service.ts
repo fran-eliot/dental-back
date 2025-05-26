@@ -12,14 +12,20 @@ export class UsersService {
 
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
 
-  async create(createUserDto: CreateUserDto): Promise <User> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password_users, 10);
-    const user = this.usersRepository.create({
-      ...createUserDto,
-      password_users: hashedPassword,
-    })
-    //'Añade nuevo usuario';
-    return this.usersRepository.save(user);
+  async create(createUserDto: CreateUserDto): Promise <boolean> {
+    const resultEmailDuplicado = await this.usersRepository.findOneBy({username_users:createUserDto.username_users});
+    if(resultEmailDuplicado){
+      return false;
+    }else{
+      const hashedPassword = await bcrypt.hash(createUserDto.password_users, 10);
+      const user = this.usersRepository.create({
+        ...createUserDto,
+        password_users: hashedPassword,
+      })
+      //'Añade nuevo usuario';
+      this.usersRepository.save(user);
+      return true;
+    }
   }
 
   findAll(): Promise<User[]> {
