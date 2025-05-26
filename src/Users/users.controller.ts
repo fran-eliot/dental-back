@@ -21,9 +21,8 @@ export class UsersController {
     return this.usersService.findOne(id_users);
   }
 
-  @Patch(':id/password_users')
-  //http://localhost:3000/users/1/password_users paso un json con la password_users:"nueva_contraseña";
-  updatePassword(@Param('id') id_users: number, @Body('password_users') password_users:string ) {
+  @Patch(':id/:password_users')
+  updatePassword(@Param('id') id_users: number, @Param('password_users') password_users:string ) {
     return this.usersService.updatePassword(id_users, password_users);
   }
 

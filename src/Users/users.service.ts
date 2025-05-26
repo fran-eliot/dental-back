@@ -12,7 +12,6 @@ export class UsersService {
 
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
 
-  //Si quiero manejar errores tengo que hacerlo con un Async/Await
   async create(createUserDto: CreateUserDto): Promise <User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password_users, 10);
     const user = this.usersRepository.create({
