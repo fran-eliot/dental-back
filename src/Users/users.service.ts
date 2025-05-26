@@ -43,17 +43,19 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id_users: id_users } });
     if(!user){
       throw new Error(`Usuario con ID ${id_users} no encontrado`);
-    }
-    user.password_users = newPassword;
+    }else{
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password_users = hashedPassword;
     await this.usersRepository.save(user);
     return `Contraseña actualizada para el usuario con ID ${id_users}`;
+    }
   }
 
   async delete(id_users: number): Promise<string> {
     //borramos el contacto por id
     const result = await this.usersRepository.delete(id_users);
 
-    if (result.affected === 0) {
+    if (result.affected == 0) {
       throw new Error(`Usuario con ID ${id_users} no encontrado`);
     }
     return `Usuario con ID ${id_users} eliminado correctamente`;

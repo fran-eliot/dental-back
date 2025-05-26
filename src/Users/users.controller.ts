@@ -1,7 +1,15 @@
 import {Body, Controller, Get, Post, Param, Patch, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+//Swagger mostrará un botón "Authorize" que me permite ingresar un token JWT para autenticarte y probar las rutas protegidas.
+/*@ApiTags('users')
+@ApiBearerAuth('access-token')
+//De momento no voy a implementar esto para que no me pida la autorizacion
+@UseGuards(JwtAuthGuard)*/
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
