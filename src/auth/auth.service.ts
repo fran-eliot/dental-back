@@ -11,8 +11,9 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  //Servicio del login
+  //Servicio del login, devuelve el token del usuario y su role
   async login(loginDto: LoginDto) {
+
     const { username_users, password_users } = loginDto;
     const user = await this.usersService.findByEmail(username_users);
     if (!user){
@@ -22,9 +23,14 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Contraseña incorrecta');
     }
-    const payload = { username: user.username_users, sub: user.id_users };
+    const payload = { username: user.username_users, sub: user.id_users, rol: user.rol_users };
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id_users,
+        email: user.username_users,
+        rol: user.rol_users
+      }
     };
   }
 }

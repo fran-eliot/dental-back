@@ -29,7 +29,7 @@ export class UsersService {
     }
   }
 
-  //Devuelve todos los usuario
+  //Devuelve todos los usuarios
   findAll(): Promise<User[]> {
     return this.usersRepository.find();
   }
@@ -39,7 +39,7 @@ export class UsersService {
     return this.usersRepository.findOneBy({id_users: id_users});
   }
 
-  //Buscamos el usuario por email
+  //Buscamos el usuario por email , para el login
   async findByEmail(username_users: string): Promise<User | null> {
     return this.usersRepository.findOneBy({ username_users });
   }
@@ -66,7 +66,5 @@ export class UsersService {
     }
     return `Usuario con ID ${id_users} eliminado correctamente`;
   }
-
- 
 
 }
