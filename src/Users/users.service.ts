@@ -12,6 +12,7 @@ export class UsersService {
 
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
 
+  //Alta de nuevo usuario, si devuelve false es porque el mail esta duplicado y no deja crearlo
   async create(createUserDto: CreateUserDto): Promise <boolean> {
     const resultEmailDuplicado = await this.usersRepository.findOneBy({username_users:createUserDto.username_users});
     if(resultEmailDuplicado){
@@ -28,18 +29,23 @@ export class UsersService {
     }
   }
 
+  //Devuelve todos los usuario
   findAll(): Promise<User[]> {
-    //`Devuelve todos los users`;
     return this.usersRepository.find();
   }
 
+  //Devuelve el usuario por id;
   findOne(id_users: number): Promise<User> {
-    //`Devuelve el usuario por id`;
     return this.usersRepository.findOneBy({id_users: id_users});
   }
 
+  //Buscamos el usuario por email
+  async findByEmail(username_users: string): Promise<User | null> {
+    return this.usersRepository.findOneBy({ username_users });
+  }
+
+  //Actualizamos solo la contraseña
   async updatePassword(id_users: number, newPassword: string): Promise<string>{
-    //`Actualizamos la contraseña`;
     const user = await this.usersRepository.findOne({ where: { id_users: id_users } });
     if(!user){
       throw new Error(`Usuario con ID ${id_users} no encontrado`);
@@ -51,8 +57,8 @@ export class UsersService {
     }
   }
 
+  //Borramos el usuario filtrando por el id
   async delete(id_users: number): Promise<string> {
-    //borramos el contacto por id
     const result = await this.usersRepository.delete(id_users);
 
     if (result.affected == 0) {
@@ -61,9 +67,6 @@ export class UsersService {
     return `Usuario con ID ${id_users} eliminado correctamente`;
   }
 
-  async findByEmail(username_users: string): Promise<User | null> {
-    //Encontramos el usuario por email
-    return this.usersRepository.findOneBy({ username_users });
-  }
+ 
 
 }

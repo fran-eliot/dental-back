@@ -14,27 +14,32 @@ import { CreateUserDto } from './dto/create-user.dto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('nuevo_usuario')
+  //Alta de usuario
+  @Post('alta')
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
+  //Traemos todos los usuarios
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
+  //Buscar usuario por el id
+  @Get('buscar/:id')
   findOne(@Param('id') id_users: number) {
     return this.usersService.findOne(id_users);
   }
 
-  @Patch(':id/:password_users')
-  updatePassword(@Param('id') id_users: number, @Param('password_users') password_users:string ) {
+  //Actualizamos la contraseña -- falta verificar si funciona
+  @Patch('usuarios/:id/password_users')
+  updatePassword(@Param('id') id_users: number, @Body('password_users') password_users:string ) {
     return this.usersService.updatePassword(id_users, password_users);
   }
 
-  @Delete(':id')
+  //Borramos un usuario filtrando por el id
+  @Delete('eliminar/:id')
   delete(@Param('id') id_users: number) {
     return this.usersService.delete(id_users);
   }
