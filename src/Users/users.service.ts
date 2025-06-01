@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 //Para encryptar la contraseña en la base de datos
 import * as bcrypt from 'bcrypt';
+//Esto aqui para excluir la contraseña
+import { instanceToPlain } from 'class-transformer';
 
 
 @Injectable()
@@ -13,31 +15,45 @@ export class UsersService {
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
 
   //Alta de nuevo usuario, si devuelve false es porque el mail esta duplicado y no deja crearlo
-  async create(createUserDto: CreateUserDto): Promise <boolean> {
+  async create(createUserDto: CreateUserDto): Promise <User> {
+
+    const { username_users, password_users } = createUserDto;
+
+    // Verifica si el email está vacío
+    if (!username_users || username_users.trim() === '') {
+      throw new BadRequestException('El email es obligatorio');
+    }
+
     const resultEmailDuplicado = await this.usersRepository.findOneBy({username_users:createUserDto.username_users});
     if(resultEmailDuplicado){
-      return false;
+      throw new BadRequestException('El usuario ya está registrado');
     }else{
+      //Verifica que la constraseña no este vacia
+      if (!password_users || password_users.trim() === '') {
+        throw new BadRequestException('La contraseña no puede esta vacía');
+      }
       const hashedPassword = await bcrypt.hash(createUserDto.password_users, 10);
       const user = this.usersRepository.create({
         ...createUserDto,
         password_users: hashedPassword,
       })
-      //'Añade nuevo usuario';
-      this.usersRepository.save(user);
-      return true;
+      //Añade nuevo usuario y lo devuelve para que despues del registro podamos crear el professional
+      const saveUser = await this.usersRepository.save(user);
+      return saveUser;
     }
   }
 
-  //Devuelve todos los usuarios
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
+  //Devuelve todos los usuarios sin las contraseñas
+  async findAll(): Promise<any> {
+  const users = await this.usersRepository.find();
+  return instanceToPlain(users); //Elimina la contraseña de la respuesta
+}
 
-  //Devuelve el usuario por id;
-  findOne(id_users: number): Promise<User> {
-    return this.usersRepository.findOneBy({id_users: id_users});
-  }
+  //Devuelve el usuario por id sin la contraseña
+  async findOne(id_users: number): Promise<any> {
+  const user = await this.usersRepository.findOneBy({ id_users });
+  return instanceToPlain(user); 
+}
 
   //Buscamos el usuario por email , para el login
   async findByEmail(username_users: string): Promise<User | null> {
@@ -66,5 +82,4 @@ export class UsersService {
     }
     return `Usuario con ID ${id_users} eliminado correctamente`;
   }
-
 }

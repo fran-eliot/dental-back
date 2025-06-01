@@ -1,14 +1,20 @@
-import {Body, Controller, Get, Post, Param, Patch, Delete } from '@nestjs/common';
+import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { User } from './entities/user.entity';
 
+@ApiTags('users')
+@ApiBearerAuth('access-token') //Asi es como se llama en el main.ts
+@UseGuards(JwtAuthGuard) //Si lo pongo aqui me protege todas las rutas, si solo quiero alguna lo tengo que poner solo en esa
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   //Alta de usuario
   @Post('alta')
-  create(@Body() createUserDto: CreateUserDto) {
+  create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
 

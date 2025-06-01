@@ -1,5 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRole } from '../enums/rol.enum';
+//Utilizo esta libreria para excluir la contraseña de los datos que envio al front
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -10,6 +12,7 @@ export class User {
   username_users: string;
 
   @Column()
+  @Exclude()//Aqui lo pongo tb
   password_users: string;
 
   @Column({
