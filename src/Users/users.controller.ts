@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards } from '@nestjs/common';
+import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
@@ -14,6 +14,7 @@ export class UsersController {
 
   //Alta de usuario
   @Post('alta')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }

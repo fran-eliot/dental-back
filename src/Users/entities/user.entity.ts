@@ -12,7 +12,7 @@ export class User {
   username_users: string;
 
   @Column()
-  @Exclude()//Aqui lo pongo tb
+  @Exclude()//Aqui lo pongo tb para que no mande la contraseña
   password_users: string;
 
   @Column({
