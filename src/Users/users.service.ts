@@ -1,12 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 //Para encryptar la contraseña en la base de datos
 import * as bcrypt from 'bcrypt';
-//Esto aqui para excluir la contraseña
-import { instanceToPlain } from 'class-transformer';
+import { FindUserDto } from './dto/find_user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Injectable()
@@ -44,36 +44,71 @@ export class UsersService {
   }
 
   //Devuelve todos los usuarios sin las contraseñas
-  async findAll(): Promise<any> {
-  const users = await this.usersRepository.find();
-  return instanceToPlain(users); //Elimina la contraseña de la respuesta
-}
+  async findAll(): Promise<FindUserDto[]> {
+    return (await this.usersRepository.find())
+      .map(user => new FindUserDto(user.id_users, user.username_users, user.rol_users, user.is_active_users));
+  }
 
   //Devuelve el usuario por id sin la contraseña
-  async findOne(id_users: number): Promise<any> {
-  const user = await this.usersRepository.findOneBy({ id_users });
-  return instanceToPlain(user); 
-}
+  async findOne(findUserDto: FindUserDto): Promise<FindUserDto> {
+  const user = await this.usersRepository.findOneBy({id_users:findUserDto.id_users});
+  return new FindUserDto(user.id_users, user.username_users, user.rol_users, user.is_active_users)
 
-  //Buscamos el usuario por email , para el login
+  }
+
+  //Buscamos el usuario por email , se usa para el login
   async findByEmail(username_users: string): Promise<User | null> {
     return this.usersRepository.findOneBy({ username_users });
   }
 
   //Actualizamos solo la contraseña
-  async updatePassword(id_users: number, newPassword: string): Promise<string>{
-    const user = await this.usersRepository.findOne({ where: { id_users: id_users } });
+  async updatePassword(updateUserDto:UpdateUserDto): Promise<string>{
+    const { id_users, password_users } = updateUserDto;
+    if (!password_users) {
+      throw new BadRequestException('La contraseña es requerida');
+    }
+
+    const user = await this.usersRepository.findOne({ where: {id_users} });
     if(!user){
-      throw new Error(`Usuario con ID ${id_users} no encontrado`);
+      throw new Error(`Usuario con ID ${updateUserDto.id_users} no encontrado`);
     }else{
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const hashedPassword = await bcrypt.hash(password_users, 10);
       user.password_users = hashedPassword;
-    await this.usersRepository.save(user);
-    return `Contraseña actualizada para el usuario con ID ${id_users}`;
+      await this.usersRepository.save(user);
+      return `Contraseña actualizada para el usuario con ID ${id_users}`;
     }
   }
 
-  //Borramos el usuario filtrando por el id
+  //Actualizamos el rol
+  async updateRol(updateUserDto:UpdateUserDto): Promise<string>{
+    const { id_users, rol_users } = updateUserDto;
+    if (!rol_users) {
+      throw new BadRequestException('El rol es requerido');
+    }
+
+    const user = await this.usersRepository.findOne({ where: {id_users} });
+    if(!user){
+      throw new Error(`Usuario con ID ${id_users} no encontrado`);
+    }
+    user.rol_users = rol_users; 
+    await this.usersRepository.save(user);
+    return `Rol actualizado para el usuario con ID ${id_users}`;
+    
+  }
+
+  //Cambiamos de activo a inactivo y viceversa
+  async toggleUserStatus(id_users: number): Promise<string> {
+    const user = await this.usersRepository.findOne({ where: { id_users } });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${id_users} no encontrado`);
+    }
+    //me pone el contrario del que está
+    user.is_active_users = !user.is_active_users;
+    await this.usersRepository.save(user);
+    return `Usuario con ID ${id_users} ahora está ${user.is_active_users ? 'activo' : 'inactivo'}`;
+}
+
+  /*Borramos el usuario filtrando por el id
   async delete(id_users: number): Promise<string> {
     const result = await this.usersRepository.delete(id_users);
 
@@ -81,5 +116,5 @@ export class UsersService {
       throw new Error(`Usuario con ID ${id_users} no encontrado`);
     }
     return `Usuario con ID ${id_users} eliminado correctamente`;
-  }
+  }*/
 }

@@ -1,9 +1,12 @@
-import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards, UsePipes, ValidationPipe, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
+import { FindUserDto } from './dto/find_user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole } from './enums/rol.enum';
 
 @ApiTags('users')
 @ApiBearerAuth('access-token') //Asi es como se llama en el main.ts
@@ -25,21 +28,42 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  //Buscar usuario por el id
+  //Buscar usuario por el id, viene como string y hay que pasarlo a num
   @Get('buscar/:id')
-  findOne(@Param('id') id_users: number) {
-    return this.usersService.findOne(id_users);
+  findOne(@Param('id', ParseIntPipe) id_users: number) {
+    const findUserDto = new FindUserDto(id_users);
+    return this.usersService.findOne(findUserDto);
+
   }
 
-  //Actualizamos la contraseña -- falta verificar si funciona
-  @Patch('usuarios/:id/password_users')
-  updatePassword(@Param('id') id_users: number, @Body('password_users') password_users:string ) {
-    return this.usersService.updatePassword(id_users, password_users);
+  //Actualizamos la contraseña -- funciona con postman
+  @Patch('/:id/password_users')
+  updatePassword(@Param('id', ParseIntPipe) id_users: number, @Body('password_users') password_users:string ) {
+    const updateUserDto = { id_users, password_users };
+    return this.usersService.updatePassword(updateUserDto);
   }
 
-  //Borramos un usuario filtrando por el id
+  //Actualizamos el rol---funciona con postman
+  @Patch('/:id/rol_users')
+  updateRol(@Param('id', ParseIntPipe) id_users: number, @Body() rol:UpdateUserDto ) {
+    const { rol_users } = rol;
+
+    if (!Object.values(UserRole).includes(rol_users as UserRole)) {
+      throw new BadRequestException(`Rol inválido: ${rol_users}`);
+    }
+    const updateUserDto = { id_users, rol_users};
+    return this.usersService.updateRol(updateUserDto);
+  }
+
+  //Cambiamos de activo a inactivo y viceversa
+  @Patch(':id/toggle_status')
+  toggleStatus(@Param('id', ParseIntPipe) id_users: number) {
+    return this.usersService.toggleUserStatus(id_users);
+  }
+
+  /*Borramos un usuario filtrando por el id
   @Delete('eliminar/:id')
   delete(@Param('id') id_users: number) {
     return this.usersService.delete(id_users);
-  }
+  }*/
 }
