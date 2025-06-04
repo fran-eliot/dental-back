@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
 import { ResponseProfessionalDto } from './dto/response-professional.dto';
 import { User } from 'src/users/entities/user.entity';
+import { FindProfessionalDto } from './dto/find-professional.dto';
 
 @Injectable()
 export class ProfessionalsService {
@@ -18,12 +19,18 @@ export class ProfessionalsService {
   //Crea nuevo dentista
   async newProfessional(createProfessionalDto: CreateProfessionalDto): Promise<CreateProfessionalDto> {
     try{
+      const { user_id, ...rest } = createProfessionalDto;
       //buscamos el ultimo id_users guardado
-      const lastIdSave = await this.userRepository.findOne({order:{id_users:'DESC'}});
+      const user = await this.userRepository.findOne({
+        where: { id_users: user_id },
+      });
+      if (!user) {
+        throw new Error('No hay usuarios registrados para asociar al profesional.');
+      }
       //creamos una instancia de Professional que copia todas las propiedades del DTO en ella(con los ...)
       const professional = this.professionalRepository.create({
-        ...createProfessionalDto,
-        user: lastIdSave // id_users tiene que coincidir como se llama en la entidad User desde el userRepository
+        ...rest,
+        user // como se llama la propiedad del user_id en la entidad Professional
         
       });
       const savedProfessional = await this.professionalRepository.save(professional);
@@ -61,5 +68,11 @@ export class ProfessionalsService {
     return this.professionalRepository.save(professional);
     
   }
+
+  //Traer todos los professionales
+    async findAllProfessionals(): Promise<FindProfessionalDto[]> {
+      return (await this.professionalRepository.find())
+        .map(pro => new FindProfessionalDto(pro.id_professionals, pro.nif_professionals, pro.license_number_professionals, pro.name_professionals, pro.last_name_professionals,pro.phone_professionals, pro.email_professionals, pro.assigned_room_professionals, pro.is_active_professionals));
+    }
 
 }

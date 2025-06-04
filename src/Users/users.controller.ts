@@ -17,12 +17,12 @@ export class UsersController {
 
   //Alta de usuario
   @Post('alta')
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
+  create(@Body() createUserDto: CreateUserDto): Promise<CreateUserDto> {
     return this.usersService.create(createUserDto);
   }
 
   //Traemos todos los usuarios
-  @Get()
+  @Get('usuarios')
   findAll() {
     return this.usersService.findAll();
   }

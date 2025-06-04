@@ -1,17 +1,24 @@
 //Vamos a utilizar validaciones automáticas con el class-validator
-import { IsNotEmpty, IsString, IsEmail, IsBoolean, IsNumber, IsOptional, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsBoolean, IsNumber, IsOptional, IsInt, Matches, Length } from 'class-validator';
 
 export class CreateProfessionalDto {
-  @IsNumber()
+  @IsNotEmpty()
   @IsInt()
   user_id: number;
 
   @IsNotEmpty()
   @IsString()
+  @Length(9, 9, { message: 'El NIF debe tener exactamente 9 caracteres' })
+  @Matches(/^[0-9]{8}[A-Z]$/, {
+    message: 'El NIF debe tener 8 números y terminar con una letra mayúscula (ej: 12345678Z)',
+  })
   nif_professionals: string;
 
   @IsNotEmpty()
   @IsString()
+  @Matches(/^DENT-\d{4}$/, {
+    message: 'La licencia debe tener el formato "dent-1234"',
+  })
   license_number_professionals: string;
 
   @IsNotEmpty()
@@ -24,6 +31,9 @@ export class CreateProfessionalDto {
 
   @IsNotEmpty()
   @IsString()
+  @Matches(/^[6789]\d{8}$/, {
+    message: 'El teléfono debe tener 9 dígitos y empezar por 6, 7, 8 o 9',
+  })
   phone_professionals: string;
 
   @IsNotEmpty()

@@ -8,14 +8,14 @@ async function bootstrap() {
   app.enableCors();
 
   app.useGlobalPipes( 
-  new ValidationPipe({ 
-    whitelist: true, //si es true, solo filtra campos validados 
-    transform: true, 
-    transformOptions: { 
-      enableImplicitConversion: true, 
-    }, 
-  }), 
-);
+    new ValidationPipe({ 
+      whitelist: true, //si es true, solo filtra campos validados 
+      transform: true, 
+      transformOptions: { 
+        enableImplicitConversion: true, 
+      }, 
+    }), 
+  );
   
   //Configuracion swagger
   const config = new DocumentBuilder() 

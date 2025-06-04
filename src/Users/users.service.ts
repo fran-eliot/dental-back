@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { plainToInstance } from 'class-transformer';
 
 
 @Injectable()
@@ -15,7 +16,7 @@ export class UsersService {
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
 
   //Alta de nuevo usuario, si devuelve false es porque el mail esta duplicado y no deja crearlo
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
 
     const { username_users, password_users } = createUserDto;
 
@@ -23,7 +24,6 @@ export class UsersService {
     if (!username_users || username_users.trim() === '') {
       throw new BadRequestException('El email es obligatorio');
     }
-
     const resultEmailDuplicado = await this.usersRepository.findOneBy({username_users:createUserDto.username_users});
     if(resultEmailDuplicado){
       throw new BadRequestException('El usuario ya está registrado');
@@ -57,8 +57,22 @@ export class UsersService {
   }
 
   //Buscamos el usuario por email , se usa para el login
-  async findByEmail(username_users: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ username_users });
+  async findByEmail(username_users: string): Promise<FindUserDto | null> {
+    const user = await this.usersRepository
+    .createQueryBuilder('user')
+    .addSelect('user.password_users')  // cargar contraseña para comparar
+    .where('user.username_users = :username', { username: username_users })
+    .getOne();
+
+    if (!user) return null;
+
+    // Aquí creamos la instancia del DTO (sin password_users)
+    return plainToInstance(FindUserDto, {
+      id_users: user.id_users,
+      username_users: user.username_users,
+      rol_users: user.rol_users,
+      is_active_users: user.is_active_users,
+    });
   }
 
   //Actualizamos solo la contraseña
