@@ -1,10 +1,11 @@
 
-import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { UserRole } from "../enums/rol.enum";
 
 export class FindUserDto {
     @IsNotEmpty()
     @IsNumber()
+    @IsInt()
     id_users:number;
 
     @IsNotEmpty()

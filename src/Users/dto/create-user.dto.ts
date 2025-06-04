@@ -1,4 +1,3 @@
-
 import { IsBoolean, IsEmail, IsNotEmpty, IsString, IsStrongPassword } from 'class-validator';
 import { UserRole } from "../enums/rol.enum";
 

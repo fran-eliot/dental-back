@@ -3,11 +3,12 @@ import { User } from "src/users/entities/user.entity";
 
 @Entity('professionals')
 export class Professional{
+   
     @PrimaryGeneratedColumn()
     id_professionals: number;
   
     @OneToOne(() => User)
-    @JoinColumn({ name: 'user_id' })
+    @JoinColumn({ name: 'user_id', referencedColumnName:'id_users' })
     user: User;
 
     @Column({ nullable: false })

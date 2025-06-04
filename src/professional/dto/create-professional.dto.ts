@@ -1,8 +1,9 @@
 //Vamos a utilizar validaciones automáticas con el class-validator
-import { IsNotEmpty, IsString, IsEmail, IsBoolean, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsEmail, IsBoolean, IsNumber, IsOptional, IsInt } from 'class-validator';
 
 export class CreateProfessionalDto {
   @IsNumber()
+  @IsInt()
   user_id: number;
 
   @IsNotEmpty()
@@ -29,7 +30,7 @@ export class CreateProfessionalDto {
   @IsEmail()
   email_professionals: string;
 
-  
+  @IsOptional()
   @IsString()
   assigned_room_professionals: string;
 

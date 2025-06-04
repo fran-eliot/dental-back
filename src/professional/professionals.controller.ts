@@ -18,8 +18,6 @@ export class ProfessionalsController {
   constructor(private readonly professionalsService: ProfessionalsService) {}
 
   @Post('alta')
-  //Lanza un error si algún campo obligatorio está vacío o mal formado
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   create(@Body() createProfessionalDto: CreateProfessionalDto) {
     return this.professionalsService.newProfessional(createProfessionalDto);
   }

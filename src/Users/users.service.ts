@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 //Para encryptar la contraseña en la base de datos
 import * as bcrypt from 'bcrypt';
-import { FindUserDto } from './dto/find_user.dto';
+import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 
@@ -15,7 +15,7 @@ export class UsersService {
   constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
 
   //Alta de nuevo usuario, si devuelve false es porque el mail esta duplicado y no deja crearlo
-  async create(createUserDto: CreateUserDto): Promise <User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
 
     const { username_users, password_users } = createUserDto;
 

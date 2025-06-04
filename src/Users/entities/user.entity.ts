@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 import { UserRole } from '../enums/rol.enum';
+import { Professional } from 'src/professional/entities/profesional.entity';
 
 
 @Entity('users')

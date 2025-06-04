@@ -1,10 +1,10 @@
-import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards, UsePipes, ValidationPipe, ParseIntPipe, BadRequestException } from '@nestjs/common';
+import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards,BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
-import { FindUserDto } from './dto/find_user.dto';
+import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './enums/rol.enum';
 
@@ -17,7 +17,6 @@ export class UsersController {
 
   //Alta de usuario
   @Post('alta')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   create(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.usersService.create(createUserDto);
   }
@@ -30,7 +29,7 @@ export class UsersController {
 
   //Buscar usuario por el id, viene como string y hay que pasarlo a num
   @Get('buscar/:id')
-  findOne(@Param('id', ParseIntPipe) id_users: number) {
+  findOne(@Param('id') id_users: number) {
     const findUserDto = new FindUserDto(id_users);
     return this.usersService.findOne(findUserDto);
 
@@ -38,14 +37,14 @@ export class UsersController {
 
   //Actualizamos la contraseña -- funciona con postman
   @Patch('/:id/password_users')
-  updatePassword(@Param('id', ParseIntPipe) id_users: number, @Body('password_users') password_users:string ) {
+  updatePassword(@Param('id') id_users: number, @Body('password_users') password_users:string ) {
     const updateUserDto = { id_users, password_users };
     return this.usersService.updatePassword(updateUserDto);
   }
 
   //Actualizamos el rol---funciona con postman
   @Patch('/:id/rol_users')
-  updateRol(@Param('id', ParseIntPipe) id_users: number, @Body() rol:UpdateUserDto ) {
+  updateRol(@Param('id') id_users: number, @Body() rol:UpdateUserDto ) {
     const { rol_users } = rol;
 
     if (!Object.values(UserRole).includes(rol_users as UserRole)) {
@@ -57,7 +56,7 @@ export class UsersController {
 
   //Cambiamos de activo a inactivo y viceversa
   @Patch(':id/toggle_status')
-  toggleStatus(@Param('id', ParseIntPipe) id_users: number) {
+  toggleStatus(@Param('id') id_users: number) {
     return this.usersService.toggleUserStatus(id_users);
   }
 
