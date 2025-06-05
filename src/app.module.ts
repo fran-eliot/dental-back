@@ -8,7 +8,12 @@ import { UsersModule } from './users/users.module';
 import { Professional } from './professional/entities/profesional.entity';
 
 @Module({
-  imports: [ProfessionalsModule, AuthModule,
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo, para las variables de entorno
+    }),
+    ProfessionalsModule, 
+    AuthModule,
     UsersModule, 
     TypeOrmModule.forRoot({
       type: 'mysql', // Tipo de base de datos
@@ -20,11 +25,6 @@ import { Professional } from './professional/entities/profesional.entity';
       entities: [User, Professional], 
       synchronize: false, // ¡Ojo! En producción suele estar en false, para que no cambie el esquema automáticamente
     }),
-    ConfigModule.forRoot({
-      isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo
-    }),
-    //AuthModule,
-    //UsersModule,
   ],
   //controllers: [AppController],
   //providers: [AppService],
