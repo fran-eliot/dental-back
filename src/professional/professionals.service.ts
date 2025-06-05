@@ -68,7 +68,6 @@ export class ProfessionalsService {
     return this.professionalRepository.save(professional);
     
   }
-
   //Traer todos los professionales
     async findAllProfessionals(): Promise<FindProfessionalDto[]> {
       return (await this.professionalRepository.find())
