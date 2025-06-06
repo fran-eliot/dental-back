@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/users/entities/user.entity";
+import { ProfessionalAvailability } from "src/availabilities/entities/ProfessionalAvailability";
 
 @Entity('professionals')
 export class Professional{
@@ -27,4 +28,7 @@ export class Professional{
     assigned_room_professionals:string;
     @Column({ default: true }) //1 activo 0 Inactivo, por defecto 1
     is_active_professionals:boolean
+
+    @OneToMany(() => ProfessionalAvailability, pa => pa.professional)
+    availabilities: ProfessionalAvailability[];
 }
