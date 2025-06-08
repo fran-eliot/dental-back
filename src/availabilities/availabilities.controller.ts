@@ -1,0 +1,125 @@
+/**
+ * Controlador de las disponibilidades de los profesionales.
+ * Gestiona la creación, consulta, actualización y limpieza de slots de disponibilidad.
+ */
+
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { AvailabilitiesService } from './availabilities.service';
+import { ProfessionalAvailability } from './entities/ProfessionalAvailability';
+import { Status } from './enums/status.enum';
+import { Slot } from './entities/Slot';
+import { UpdateAvailabilityStatusDto } from './dtos/UpdateAvailabilityStatusDto';
+import { AvailabilityFilterDto } from './dtos/AvailabilityFilterDto';
+import { CleanOldAvailabilitiesDto } from './dtos/CleanOldAvailabilitiesDto';
+import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('Disponibilidades')
+@Controller('disponibilidades')
+export class AvailabilitiesController {
+  constructor(private readonly availabilitiesService: AvailabilitiesService) {}
+
+  /**
+   * Genera todas las disponibilidades para los profesionales activos
+   * de lunes a viernes de esta semana en tramos de 30 minutos.
+   * Ruta: POST /disponibilidades/genera-semana
+   */
+  @Post('genera-semana')
+  @ApiOperation({ summary: 'Generar disponibilidades para esta semana' })
+  @ApiResponse({ status: 201, description: 'Disponibilidades generadas correctamente' })
+  async generateThisWeek() {
+    await this.availabilitiesService.generateAvailabilitiesForNextWeek();
+    return { message: 'Disponibilidades generadas para esta semana' };
+  }
+
+  /**
+   * Devuelve las disponibilidades de un profesional para una fecha concreta.
+   * Ruta: GET /disponibilidades/:id/:date
+   * @param dto Contiene professionalId y date
+   */
+  @Get(':professionalId/:date')
+  @ApiOperation({ summary: 'Obtener disponibilidades de un profesional para una fecha concreta' })
+  @ApiParam({ name: 'professionalId', type: Number, description: 'ID del profesional' })
+  @ApiParam({ name: 'date', type: String, description: 'Fecha en formato YYYY-MM-DD' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de disponibilidades',
+    type: ProfessionalAvailability,
+    isArray: true
+  })
+  getAvailabilities(@Param() dto: AvailabilityFilterDto): Promise<ProfessionalAvailability[]>{
+    console.log('llega');
+    const date = new Date(dto.date);
+    if (isNaN(date.getTime())) {
+      throw new BadRequestException('Fecha inválida');
+    }
+    return this.availabilitiesService.getAvailabilityByProfessional(dto.professionalId, date);
+  }
+
+  /**
+   * Actualiza el estado de una disponibilidad concreta (libre, reservado o no disponible).
+   * Ruta: PATCH /disponibilidades/:id
+   * @param id ID de la disponibilidad
+   * @param updateDto Estado nuevo (libre, reservado o no disponible)
+   */
+  @Patch(':id/')
+  @ApiOperation({ summary: 'Actualizar estado de una disponibilidad' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID de la disponibilidad' })
+  @ApiBody({ type: UpdateAvailabilityStatusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Disponibilidad actualizada',
+    type: ProfessionalAvailability
+  })
+  updateStatus(@Param('id', ParseIntPipe) id:number,@Body() updateDto:UpdateAvailabilityStatusDto):Promise<ProfessionalAvailability>{
+    return this.availabilitiesService.updateAvailabilityStatus(id, updateDto.status);
+  }
+
+  /**
+   * Devuelve los slots libres de un profesional en una fecha concreta.
+   * Ruta: GET /disponibilidades/slots-libres/:professionalId/:date
+   * @param dto Contiene professionalId y date
+   */
+  @Get('slots-libres/:professionalId/:date')
+  @ApiOperation({ summary: 'Obtener slots libres de un profesional en una fecha concreta' })
+  @ApiParam({ name: 'professionalId', type: Number, description: 'ID del profesional' })
+  @ApiParam({ name: 'date', type: String, description: 'Fecha en formato YYYY-MM-DD' })
+  @ApiResponse({
+    status: 200,
+    description: 'Slots libres',
+    type: Slot,
+    isArray: true
+  })
+  getFreeSlots(@Param() dto: AvailabilityFilterDto): Promise<Slot[]> {
+    return this.availabilitiesService.getFreeSlotsByDate(dto.professionalId, new Date(dto.date));
+  }
+
+  /**
+   * Elimina todas las disponibilidades anteriores a una fecha concreta.
+   * Ruta: DELETE /disponibilidades/limpieza/:beforeDate
+   * @param dto Contiene beforeDate como string (YYYY-MM-DD)
+   */
+  @Delete('limpieza/:beforeDate')
+  @ApiOperation({ summary: 'Eliminar disponibilidades anteriores a una fecha' })
+  @ApiParam({ name: 'beforeDate', type: String, description: 'Fecha límite en formato YYYY-MM-DD' })
+  @ApiResponse({ status: 200, description: 'Disponibilidades antiguas eliminadas' })
+  async cleanOld(@Param() dto:CleanOldAvailabilitiesDto): Promise<{ message: string }> {
+    const date = new Date(dto.beforeDate);
+    if (isNaN(date.getTime())) {
+      throw new BadRequestException('Fecha inválida');
+    }
+    await this.availabilitiesService.cleanOldAvailabilities(date);
+    return { message: 'Disponibilidades antiguas eliminadas correctamente' };
+  }
+
+
+}

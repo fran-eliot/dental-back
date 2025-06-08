@@ -6,10 +6,13 @@ import { ProfessionalsModule } from './professional/professionals.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 import { Professional } from './professional/entities/profesional.entity';
+import { Slot } from './availabilities/entities/Slot';
+import { ProfessionalAvailability } from './availabilities/entities/ProfessionalAvailability';
+import { AvailabiltiesModule } from './availabilities/availabities.module';
 
 @Module({
   imports: [ProfessionalsModule, AuthModule,
-    UsersModule, 
+    UsersModule, AvailabiltiesModule,
     TypeOrmModule.forRoot({
       type: 'mysql', // Tipo de base de datos
       host: 'localhost', // Cambia si usas otro host
@@ -17,8 +20,9 @@ import { Professional } from './professional/entities/profesional.entity';
       username: 'nestuser', // Usuario MySQL con permisos
       password: 'nestpass',
       database: 'clinica_dental', 
-      entities: [User, Professional], 
+      entities: [User, Professional,Slot,ProfessionalAvailability], 
       synchronize: false, // ¡Ojo! En producción suele estar en false, para que no cambie el esquema automáticamente
+      logging:true,
     }),
     ConfigModule.forRoot({
       isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo
