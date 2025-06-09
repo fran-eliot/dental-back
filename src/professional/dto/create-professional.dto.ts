@@ -17,7 +17,7 @@ export class CreateProfessionalDto {
   @IsNotEmpty()
   @IsString()
   @Matches(/^DENT-\d{4}$/, {
-    message: 'La licencia debe tener el formato "dent-1234"',
+    message: 'La licencia debe tener el formato "DENT-****"',
   })
   license_number_professionals: string;
 
