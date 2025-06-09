@@ -22,7 +22,7 @@ export class UsersController {
   }
 
   //Traemos todos los usuarios
-  @Get('usuarios')
+  @Get('')
   findAll() {
     return this.usersService.findAll();
   }
