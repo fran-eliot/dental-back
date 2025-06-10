@@ -2,7 +2,7 @@ import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards,BadRequestE
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,18 +17,21 @@ export class UsersController {
 
   //Alta de usuario
   @Post('alta')
+  @ApiOperation({ summary: 'Dar de alta un nuevo usuario' })
   create(@Body() createUserDto: CreateUserDto): Promise<CreateUserDto> {
     return this.usersService.create(createUserDto);
   }
 
   //Traemos todos los usuarios
   @Get('')
+  @ApiOperation({ summary: 'Obtener todos los usuarios' })
   findAll() {
     return this.usersService.findAll();
   }
 
   //Buscar usuario por el id, viene como string y hay que pasarlo a num
   @Get('buscar/:id')
+  @ApiOperation({ summary: 'Obtener un usuario por su id' })
   findOne(@Param('id') id_users: number) {
     const findUserDto = new FindUserDto(id_users);
     return this.usersService.findOne(findUserDto);
@@ -36,7 +39,10 @@ export class UsersController {
   }
 
   //Actualizamos la contraseña -- funciona con postman
-  @Patch('/:id/password_users')
+  @Patch('/:id/update_password')
+  @ApiOperation({ summary: 'Actualizamos la contraseña de un usuario' })
+  @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
+  @ApiBody({ type: UpdateUserDto })
   updatePassword(@Param('id') id_users: number, @Body('password_users') password_users:string ) {
     const updateUserDto = { id_users, password_users };
     return this.usersService.updatePassword(updateUserDto);
@@ -44,6 +50,7 @@ export class UsersController {
 
   //Actualizamos el rol---funciona con postman
   @Patch('/:id/rol_users')
+  @ApiOperation({ summary: 'Actualizamos el rol de un usuario' })
   updateRol(@Param('id') id_users: number, @Body() rol:UpdateUserDto ) {
     const { rol_users } = rol;
 
@@ -56,8 +63,9 @@ export class UsersController {
 
   //Cambiamos de activo a inactivo y viceversa
   @Patch(':id/toggle_status')
-  toggleStatus(@Param('id') id_users: number) {
-    return this.usersService.toggleUserStatus(id_users);
+  @ApiOperation({ summary: 'Actualiza el status de un usuario' })
+  toggleStatus(@Param('id') id_users: number, @Body() body: { is_active_users: boolean }){
+    return this.usersService.toggleUserStatus(id_users, body.is_active_users);
   }
 
   /*Borramos un usuario filtrando por el id

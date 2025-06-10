@@ -35,3 +35,4 @@ import { AvailabiltiesModule } from './availabilities/availabities.module';
   //providers: [AppService],
 })
 export class AppModule {}
+
