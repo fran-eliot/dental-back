@@ -30,3 +30,4 @@ import { Professional } from './professional/entities/profesional.entity';
   //providers: [AppService],
 })
 export class AppModule {}
+
