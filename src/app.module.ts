@@ -18,6 +18,7 @@ import { AvailabiltiesModule } from './availabilities/availabities.module';
     ProfessionalsModule, 
     AuthModule,
     UsersModule, 
+    AvailabiltiesModule,
     TypeOrmModule.forRoot({
       type: 'mysql', // Tipo de base de datos
       host: 'localhost', // Cambia si usas otro host
