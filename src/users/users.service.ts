@@ -51,8 +51,8 @@ export class UsersService {
 
   //Devuelve el usuario por id sin la contraseña
   async findOne(findUserDto: FindUserDto): Promise<FindUserDto> {
-  const user = await this.usersRepository.findOneBy({id_users:findUserDto.id_users});
-  return new FindUserDto(user.id_users, user.username_users, user.rol_users, user.is_active_users)
+    const user = await this.usersRepository.findOneBy({id_users:findUserDto.id_users});
+    return new FindUserDto(user.id_users, user.username_users, user.rol_users, user.is_active_users)
 
   }
 
@@ -76,7 +76,7 @@ export class UsersService {
   }
 
   //Actualizamos solo la contraseña
-  async updatePassword(updateUserDto:UpdateUserDto): Promise<string>{
+  async updatePassword(updateUserDto:UpdateUserDto): Promise<{message: string}>{
     const { id_users, password_users } = updateUserDto;
     if (!password_users) {
       throw new BadRequestException('La contraseña es requerida');
@@ -89,7 +89,7 @@ export class UsersService {
       const hashedPassword = await bcrypt.hash(password_users, 10);
       user.password_users = hashedPassword;
       await this.usersRepository.save(user);
-      return `Contraseña actualizada para el usuario con ID ${id_users}`;
+      return { message: `Contraseña actualizada para el usuario con ID ${id_users}` };
     }
   }
 
@@ -111,15 +111,15 @@ export class UsersService {
   }
 
   //Cambiamos de activo a inactivo y viceversa
-  async toggleUserStatus(id_users: number): Promise<string> {
+  async toggleUserStatus(id_users: number, newStatus: boolean): Promise<UpdateUserDto> {
     const user = await this.usersRepository.findOne({ where: { id_users } });
     if (!user) {
       throw new NotFoundException(`Usuario con ID ${id_users} no encontrado`);
     }
     //me pone el contrario del que está
-    user.is_active_users = !user.is_active_users;
-    await this.usersRepository.save(user);
-    return `Usuario con ID ${id_users} ahora está ${user.is_active_users ? 'activo' : 'inactivo'}`;
+    user.is_active_users = newStatus;
+    return await this.usersRepository.save(user);
+    //return `Usuario con ID ${id_users} ahora está ${user.is_active_users ? 'activo' : 'inactivo'}`;
 }
 
   /*Borramos el usuario filtrando por el id
