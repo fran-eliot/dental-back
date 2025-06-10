@@ -11,8 +11,13 @@ import { ProfessionalAvailability } from './availabilities/entities/Professional
 import { AvailabiltiesModule } from './availabilities/availabities.module';
 
 @Module({
-  imports: [ProfessionalsModule, AuthModule,
-    UsersModule, AvailabiltiesModule,
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo, para las variables de entorno
+    }),
+    ProfessionalsModule, 
+    AuthModule,
+    UsersModule, 
     TypeOrmModule.forRoot({
       type: 'mysql', // Tipo de base de datos
       host: 'localhost', // Cambia si usas otro host
@@ -24,11 +29,6 @@ import { AvailabiltiesModule } from './availabilities/availabities.module';
       synchronize: false, // ¡Ojo! En producción suele estar en false, para que no cambie el esquema automáticamente
       logging:true,
     }),
-    ConfigModule.forRoot({
-      isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo
-    }),
-    //AuthModule,
-    //UsersModule,
   ],
   //controllers: [AppController],
   //providers: [AppService],
