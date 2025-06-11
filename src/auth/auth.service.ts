@@ -24,14 +24,20 @@ export class AuthService {
     if (!userDto){
       throw new UnauthorizedException('El usuario no existe');
     }
+
     const userEntity = await this.usersRepository
       .createQueryBuilder('user')
-      .addSelect('user.password_users')
+      .addSelect (['user.password_users', 'user.is_active_users'])
       .where('user.username_users = :username', { username: username_users })
       .getOne();
     
     if (!userEntity || !userEntity.password_users) {
       throw new UnauthorizedException('Usuario o contraseña incorrecta');
+    }
+
+    // Validación de usuario inactivo
+    if (!userEntity.is_active_users) {
+      throw new UnauthorizedException('Este usuario está inactivo. Contacte con el administrador.');
     }
 
     const isPasswordValid = await bcrypt.compare(password_users, userEntity.password_users);
