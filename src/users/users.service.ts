@@ -8,12 +8,16 @@ import * as bcrypt from 'bcrypt';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { plainToInstance } from 'class-transformer';
+import { Professional } from 'src/professional/entities/profesional.entity';
 
 
 @Injectable()
 export class UsersService {
 
-  constructor(@InjectRepository(User) private readonly usersRepository: Repository<User>){}
+  constructor(
+    @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Professional) private readonly professionalsRepository: Repository<Professional>
+  ){}
 
   //Alta de nuevo usuario, si devuelve false es porque el mail esta duplicado y no deja crearlo
   async create(createUserDto: CreateUserDto): Promise<CreateUserDto> {
@@ -120,7 +124,30 @@ export class UsersService {
     user.is_active_users = newStatus;
     return await this.usersRepository.save(user);
     //return `Usuario con ID ${id_users} ahora está ${user.is_active_users ? 'activo' : 'inactivo'}`;
-}
+  }
+
+  //Actualizamos el email tanto en usuarios como en la tabla professionals
+  async updateUsername(id_users: number, newEmail: string): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { id_users: id_users },
+      relations: ['professional'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    user.username_users = newEmail;
+
+    // Sincronizar con el profesional si existe
+    if (user.professional) {
+      user.professional.email_professionals = newEmail;
+      await this.professionalsRepository.save(user.professional);
+    }
+
+    return user;
+  }
+
 
   /*Borramos el usuario filtrando por el id
   async delete(id_users: number): Promise<string> {

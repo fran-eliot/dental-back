@@ -68,6 +68,14 @@ export class UsersController {
     return this.usersService.toggleUserStatus(id_users, body.is_active_users);
   }
 
+  //Actualizamos el username en users y tb en professionals
+  @Patch(':id/username')
+  @ApiOperation({ summary: 'Actualiza el username' })
+  async updateUsername(@Param('id') id_users: number, @Body('username') username_users: string) {
+    return this.usersService.updateUsername(id_users, username_users);
+  }
+
+
   /*Borramos un usuario filtrando por el id
   @Delete('eliminar/:id')
   delete(@Param('id') id_users: number) {

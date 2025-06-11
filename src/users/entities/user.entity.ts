@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
 import { UserRole } from '../enums/rol.enum';
 import { Professional } from 'src/professional/entities/profesional.entity';
 
@@ -24,5 +24,8 @@ export class User {
 
   @Column({ default: true })
   is_active_users: boolean;
+
+  @OneToOne(() => Professional, professional => professional.user)
+  professional: Professional;
 
 }
