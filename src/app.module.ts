@@ -1,17 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppointmentsModule } from './appointments/appointments.module';
 import { AuthModule } from './auth/auth.module';
+import { AvailabiltiesModule } from './availabilities/availabities.module';
+import { ProfessionalAvailability } from './availabilities/entities/ProfessionalAvailability';
+import { Slot } from './availabilities/entities/Slot';
+import { Professional } from './professional/entities/profesional.entity';
 import { ProfessionalsModule } from './professional/professionals.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
-import { Professional } from './professional/entities/profesional.entity';
-import { Slot } from './availabilities/entities/Slot';
-import { ProfessionalAvailability } from './availabilities/entities/ProfessionalAvailability';
-import { AvailabiltiesModule } from './availabilities/availabities.module';
+import { Treatment } from './treatments/entities/treatment.entity';
+import { Patient } from './patients/entities/patients.entity';
+import { Appointment } from './appointments/entities/appointment.entity';
 
 @Module({
-  imports: [
+  imports: [AppointmentsModule, 
     ConfigModule.forRoot({
       isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo, para las variables de entorno
     }),
@@ -26,7 +30,7 @@ import { AvailabiltiesModule } from './availabilities/availabities.module';
       username: 'nestuser', // Usuario MySQL con permisos
       password: 'nestpass',
       database: 'clinica_dental', 
-      entities: [User, Professional,Slot,ProfessionalAvailability], 
+      entities: [User, Professional,Slot,ProfessionalAvailability, Treatment, Patient, Appointment], 
       synchronize: false, // ¡Ojo! En producción suele estar en false, para que no cambie el esquema automáticamente
       logging:true,
     }),
