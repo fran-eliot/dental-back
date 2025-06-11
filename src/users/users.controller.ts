@@ -58,13 +58,15 @@ export class UsersController {
   @ApiParam({ name: 'id', type: Number })
   @ApiBody({schema: {type: 'object', properties: {rol_users: {type: 'string', enum: ['admin', 'dentista'], example: 'admin'},}, required: ['rol_users'], },})
   
-  updateRol(@Param('id', ParseIntPipe) id_users: number, @Body() rol: {rol_users:UserRole} ) {
+  async updateRol(@Param('id', ParseIntPipe) id_users: number, @Body() rol: {rol_users:UserRole} ) {
     const { rol_users } = rol;
 
     if (!Object.values(UserRole).includes(rol_users)) {
       throw new BadRequestException(`Rol inválido: ${rol_users}`);
     }
-    return this.usersService.updateRol({ id_users, rol_users });
+    await this.usersService.updateRol({ id_users, rol_users });
+    return { message: `Rol actualizado para el usuario con ID ${id_users}` };
+
   }
 
   //Cambiamos de activo a inactivo y viceversa
@@ -83,6 +85,7 @@ export class UsersController {
   @ApiBody({ schema: { type: 'object', properties: { username_users: { type: 'string' } } } })
   
   async updateUsername(@Param('id') id_users: number, @Body('username_users') username_users: string) {
-    return this.usersService.updateUsername(id_users, username_users);
+    await this.usersService.updateUsername(id_users, username_users);
+    return { message: 'Username actualizado correctamente' };
   }
 }
