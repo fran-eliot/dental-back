@@ -1,8 +1,8 @@
-import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards,BadRequestException } from '@nestjs/common';
+import {Body, Controller, Get, Post, Param, Patch, Delete, UseGuards,BadRequestException, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,6 +18,7 @@ export class UsersController {
   //Alta de usuario
   @Post('alta')
   @ApiOperation({ summary: 'Dar de alta un nuevo usuario' })
+  @ApiResponse({ status: 201, description: 'Usuario creado correctamente' })
   create(@Body() createUserDto: CreateUserDto): Promise<CreateUserDto> {
     return this.usersService.create(createUserDto);
   }
@@ -32,6 +33,8 @@ export class UsersController {
   //Buscar usuario por el id, viene como string y hay que pasarlo a num
   @Get('buscar/:id')
   @ApiOperation({ summary: 'Obtener un usuario por su id' })
+  @ApiParam({ name: 'id', type: Number })
+  
   findOne(@Param('id') id_users: number) {
     const findUserDto = new FindUserDto(id_users);
     return this.usersService.findOne(findUserDto);
@@ -43,6 +46,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Actualizamos la contraseña de un usuario' })
   @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
   @ApiBody({ type: UpdateUserDto })
+  
   updatePassword(@Param('id') id_users: number, @Body('password_users') password_users:string ) {
     const updateUserDto = { id_users, password_users };
     return this.usersService.updatePassword(updateUserDto);
@@ -51,19 +55,24 @@ export class UsersController {
   //Actualizamos el rol---funciona con postman
   @Patch('/:id/rol_users')
   @ApiOperation({ summary: 'Actualizamos el rol de un usuario' })
-  updateRol(@Param('id') id_users: number, @Body() rol:UpdateUserDto ) {
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({schema: {type: 'object', properties: {rol_users: {type: 'string', enum: ['admin', 'dentista'], example: 'admin'},}, required: ['rol_users'], },})
+  
+  updateRol(@Param('id', ParseIntPipe) id_users: number, @Body() rol: {rol_users:UserRole} ) {
     const { rol_users } = rol;
 
-    if (!Object.values(UserRole).includes(rol_users as UserRole)) {
+    if (!Object.values(UserRole).includes(rol_users)) {
       throw new BadRequestException(`Rol inválido: ${rol_users}`);
     }
-    const updateUserDto = { id_users, rol_users};
-    return this.usersService.updateRol(updateUserDto);
+    return this.usersService.updateRol({ id_users, rol_users });
   }
 
   //Cambiamos de activo a inactivo y viceversa
   @Patch(':id/toggle_status')
   @ApiOperation({ summary: 'Actualiza el status de un usuario' })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiBody({ schema: { type: 'object', properties: { is_active_users: { type: 'boolean', example:true, description: 'Indica si el usuario debe estar activo (true) o inactivo (false)' } }, required: ['is_active_users'] } })
+  
   toggleStatus(@Param('id') id_users: number, @Body() body: { is_active_users: boolean }){
     return this.usersService.toggleUserStatus(id_users, body.is_active_users);
   }
@@ -71,14 +80,9 @@ export class UsersController {
   //Actualizamos el username en users y tb en professionals
   @Patch(':id/username')
   @ApiOperation({ summary: 'Actualiza el username' })
-  async updateUsername(@Param('id') id_users: number, @Body('username') username_users: string) {
+  @ApiBody({ schema: { type: 'object', properties: { username_users: { type: 'string' } } } })
+  
+  async updateUsername(@Param('id') id_users: number, @Body('username_users') username_users: string) {
     return this.usersService.updateUsername(id_users, username_users);
   }
-
-
-  /*Borramos un usuario filtrando por el id
-  @Delete('eliminar/:id')
-  delete(@Param('id') id_users: number) {
-    return this.usersService.delete(id_users);
-  }*/
 }

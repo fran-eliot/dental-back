@@ -136,7 +136,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
-
     user.username_users = newEmail;
 
     // Sincronizar con el profesional si existe
@@ -144,18 +143,7 @@ export class UsersService {
       user.professional.email_professionals = newEmail;
       await this.professionalsRepository.save(user.professional);
     }
-
+    await this.usersRepository.save(user);
     return user;
   }
-
-
-  /*Borramos el usuario filtrando por el id
-  async delete(id_users: number): Promise<string> {
-    const result = await this.usersRepository.delete(id_users);
-
-    if (result.affected == 0) {
-      throw new Error(`Usuario con ID ${id_users} no encontrado`);
-    }
-    return `Usuario con ID ${id_users} eliminado correctamente`;
-  }*/
 }
