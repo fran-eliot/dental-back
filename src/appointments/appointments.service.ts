@@ -34,7 +34,7 @@ export class AppointmentsService {
         throw new Error('Slot no encontrado');
       }
 
-      // buscamos la disponibilidad exacta
+    // buscamos la disponibilidad exacta
     const availability = await manager
       .getRepository(ProfessionalAvailability)
       .createQueryBuilder('av')//alias
