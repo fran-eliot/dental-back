@@ -40,9 +40,13 @@ export class AppointmentsService {
       .createQueryBuilder('av')//alias
       .where('av.professional_id = :profeId', { profeId: createAppointmentDto.professional_id })
       .andWhere('av.slot_id = :slot', { slot: createAppointmentDto.slot_id })
-      .andWhere('DATE(av.date_availability) = :date', { date: createAppointmentDto.date_appointments })
+      .andWhere('av.date_availability = :date', { date: createAppointmentDto.date_appointments })
       .andWhere('av.status_availability != :status', { status: 'libre' })
       .getOne();
+      console.log("Datos disponibilidad", createAppointmentDto.professional_id );
+      console.log("Datos disponibilidad", createAppointmentDto.slot_id );
+      console.log("Datos disponibilidad", createAppointmentDto.date_appointments );
+      console.log("Availability",availability )
 
     if (!availability) {
       throw new Error('Disponibilidad profesional no encontrada para este slot');
