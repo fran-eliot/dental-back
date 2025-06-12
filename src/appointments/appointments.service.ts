@@ -7,6 +7,7 @@ import { Slot } from 'src/availabilities/entities/Slot';
 import { Patient } from 'src/patients/entities/patients.entity';
 import { Professional } from 'src/professional/entities/profesional.entity';
 import { Treatment } from 'src/treatments/entities/treatment.entity';
+import { ProfessionalAvailability } from 'src/availabilities/entities/ProfessionalAvailability';
 
 
 @Injectable()
@@ -24,59 +25,68 @@ export class AppointmentsService {
     //Esta instancia tiene métodos para interactuar con la base, como transaction()
     //Permite ejecutar varias operaciones dentro de una transacción
     return await this.dataSource.transaction(async (manager) => {
-      // 1. Buscar el slot con su disponibilidad relacionada
-      const slot = await manager.findOne(Slot, {
+      // buscamos el slot 
+      const slot = await manager.getRepository(Slot).findOne({
         where: { id: createAppointmentDto.slot_id },
-        relations: ['professionalAvailabilities'], // Cargar disponibilidad
       });
 
       if (!slot) {
         throw new Error('Slot no encontrado');
       }
 
-      const availability = slot.professionalAvailabilities[0]; // Suponiendo que solo hay una por slot
+      // buscamos la disponibilidad exacta
+    const availability = await manager
+      .getRepository(ProfessionalAvailability)
+      .createQueryBuilder('av')//alias
+      .where('av.professional_id = :profeId', { profeId: createAppointmentDto.professional_id })
+      .andWhere('av.slot_id = :slot', { slot: createAppointmentDto.slot_id })
+      .andWhere('DATE(av.date_availability) = :date', { date: createAppointmentDto.date_appointments })
+      .andWhere('av.status_availability != :status', { status: 'libre' })
+      .getOne();
 
-      if (!availability) {
-        throw new Error('Disponibilidad profesional no encontrada para este slot');
-      }
+    if (!availability) {
+      throw new Error('Disponibilidad profesional no encontrada para este slot');
+    }
 
-      if (availability.status === 'reservado') {
-        throw new Error('Slot ya está reservado');
-      }
-      // Cargar entidades
-      const patient = await manager.findOneOrFail(Patient, {
-        where: { id_patients: createAppointmentDto.patient_id },
+    if (availability.status === 'reservado') {
+      throw new Error('Slot ya está reservado');
+    }
+    // para cargar las columnas relacionadas
+    const patient = await manager.findOneOrFail(Patient, {
+      where: { id_patients: createAppointmentDto.patient_id },
+    });
+
+    const professional = createAppointmentDto.professional_id
+      ? await manager.findOne(Professional, {
+          where: { id_professionals: createAppointmentDto.professional_id },
+        })
+      : null;
+
+    const treatment = createAppointmentDto.treatments_id
+      ? await manager.findOne(Treatment, {
+           where: { id_treatments: createAppointmentDto.treatments_id },
+        })
+      : null;
+
+    // crea la reserva
+    const appointment = manager
+      .getRepository(Appointment)
+      .create({
+        patient,
+        slot,
+        professional,
+        treatment,
+        date_appointments : createAppointmentDto.date_appointments,
+        duration_minutes_appointments : createAppointmentDto.duration_minutes_appointments,
+        status_appointments : createAppointmentDto.status_appointments,
+        cancellation_reason_appointments : createAppointmentDto.cancellation_reason_appointments,
+        created_by_appointments : createAppointmentDto.created_by_appointments,
       });
+      const savedAppointment = await manager.getRepository(Appointment).save(appointment);
 
-      const professional = createAppointmentDto.professional_id
-        ? await manager.findOne(Professional, {
-            where: { id_professionals: createAppointmentDto.professional_id },
-          })
-        : null;
-
-      const treatment = createAppointmentDto.treatments_id
-        ? await manager.findOne(Treatment, {
-            where: { id_treatments: createAppointmentDto.treatments_id },
-          })
-        : null;
-
-      // Crear la cita
-      const appointment = new Appointment();
-      appointment.patient = patient;
-      appointment.slot = slot;
-      appointment.professional = professional;
-      appointment.treatment = treatment;
-      appointment.date_appointments = createAppointmentDto.date_appointments;
-      appointment.duration_minutes_appointments = createAppointmentDto.duration_minutes_appointments;
-      appointment.status_appointments = createAppointmentDto.status_appointments;
-      appointment.cancellation_reason_appointments = createAppointmentDto.cancellation_reason_appointments;
-      appointment.created_by_appointments = createAppointmentDto.created_by_appointments;
-
-      const savedAppointment = await manager.save(appointment);
-
-      // 3. Marcar la disponibilidad como reservada
+      // actualiza la disponibilidad como reservada
       availability.status = 'reservado';
-      await manager.save(availability);
+      await manager.getRepository(ProfessionalAvailability).save(availability);
 
       return savedAppointment;
     });
