@@ -148,15 +148,38 @@ export class AppointmentsService {
     const appointments = await query.getMany();
 
     // Mapea los resultados con los datos que necesito
-    return appointments.map(app => ({
-      paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
-      tratamiento: app.treatment?.name_treatments ?? 'N/A',
-      hora_inicio: app.slot?.startTime ?? 'N/A',
-      hora_fin: app.slot?.endTime ?? 'N/A',
-      duracion: app.duration_minutes_appointments,
-      estado: app.status_appointments,
-      motivo_cancelacion: app.cancellation_reason_appointments ?? '',
-      creado_por: app.created_by_appointments,
-    }));
+    return appointments.map(app => {
+      //Calcular hora_fin a partir de startTime y duration_minutes_appointments
+      let hours = 0;
+      let minutes = 0;
+
+      if (app.slot && app.slot.startTime) {
+        const timeParts = app.slot.startTime.split(':').map(Number);
+        hours = timeParts[0];
+        minutes = timeParts[1];
+      }
+
+      const startDate = new Date();
+      startDate.setHours(hours, minutes, 0, 0);
+
+      const duration = app.duration_minutes_appointments || 0;
+      const endDate = new Date(startDate.getTime() + duration * 60000);
+      const hora_fin = endDate.toTimeString().substring(0, 5); // HH:MM
+
+      return {
+        id_reserva: app.id_appointments,
+        paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
+        profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
+        tratamiento: app.treatment?.name_treatments ?? 'N/A',
+        fecha_cita: app.date_appointments,
+        hora_inicio: app.slot?.startTime ?? 'N/A',
+        hora_fin,
+        periodo: app.slot?.period,
+        duracion: app.duration_minutes_appointments,
+        estado: app.status_appointments,
+        motivo_cancelacion: app.cancellation_reason_appointments ?? '',
+        creado_por: app.created_by_appointments,
+      };
+    });
   }
 }
