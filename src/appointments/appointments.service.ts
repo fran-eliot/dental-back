@@ -10,6 +10,7 @@ import { Treatment } from 'src/treatments/entities/treatment.entity';
 import { ProfessionalAvailability } from 'src/availabilities/entities/ProfessionalAvailability';
 import { FindAppointmentDto } from './dtos/find-appointment.dto';
 import { AppointmentResponseDto } from './dtos/response-appointment.dto';
+import { HistoryAppointmentDto } from './dtos/history-appointment.dto';
 
 
 @Injectable()
@@ -123,7 +124,7 @@ export class AppointmentsService {
     });
   }
 
-  //Nos traemos toda las reservas
+  //Nos traemos toda las reservas filtradas por id_professional y fecha
   async findAppointments(filters: {date_appointments?: string, professional_id?:number}): Promise<AppointmentResponseDto[]> {
     const query = this.appointmentRepository
       .createQueryBuilder('appointment')
@@ -182,4 +183,27 @@ export class AppointmentsService {
       };
     });
   }
+  //Para historial del paciente
+  async findAppointmentsByPatient(patient_id: number): Promise<HistoryAppointmentDto[]> {
+    const appointments = await this.appointmentRepository
+      .createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('appointment.professional', 'professional')
+      .leftJoinAndSelect('appointment.treatment', 'treatment')
+      .where('appointment.patient_id = :patientId', { patientId: patient_id })
+      // opcional: solo confirmadas, si quieres:
+      // .andWhere('appointment.status_appointments = :status', { status: 'confirmada' })
+      .orderBy('appointment.date_appointments', 'DESC')
+      .getMany();
+
+    return appointments.map(app => ({
+      id_reserva: app.id_appointments,
+      paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
+      fecha_cita: app.date_appointments,
+      tratamiento: app.treatment?.name_treatments ?? 'N/A',
+      motivo_cancelacion: app.cancellation_reason_appointments ?? '',
+      profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
+    }));
+  }
+  
 }

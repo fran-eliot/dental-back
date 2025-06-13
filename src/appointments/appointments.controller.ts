@@ -12,10 +12,12 @@ import {
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { Appointment } from './entities/appointment.entity';
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { FindAppointmentDto } from './dtos/find-appointment.dto';
 import { AppointmentResponseDto } from './dtos/response-appointment.dto';
 import { type } from 'os';
+import { HistoryAppointmentDto } from './dtos/history-appointment.dto';
+
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -34,17 +36,24 @@ export class AppointmentsController {
   @ApiQuery({ name: 'date_appointments', required: false, type: String, description: 'Fecha de la cita (YYYY-MM-DD)' })
   async findAppointments(
   @Query('professional_id') professional_id?: number, @Query('date_appointments') date_appointments?: string,): Promise<AppointmentResponseDto[]> {
+    const filtersAppointments: { professional_id?: number; date_appointments?: string } = {};
 
-  if (!date_appointments || !professional_id) {
-    throw new BadRequestException('Se requieren los parámetros professional_id y date_appointments');
+    if (professional_id) filtersAppointments.professional_id = Number(professional_id);
+    if (date_appointments) filtersAppointments.date_appointments = date_appointments;
+    return this.appointmentsService.findAppointments(filtersAppointments);
   }
-  
-  const filtersAppointments: { professional_id?: number; date_appointments?: string } = {};
 
-  if (professional_id) filtersAppointments.professional_id = Number(professional_id);
-  if (date_appointments) filtersAppointments.date_appointments = date_appointments;
+  @Get('history/:patientId')
+  @ApiOperation({ summary: 'Obtener historial de citas de un paciente' })
+  @ApiParam({ name: 'patientId', type: Number, description: 'ID del paciente' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de citas históricas del paciente',
+    type: [HistoryAppointmentDto],
+  })
+  async getHistoryByPatient(@Param('patientId') patientId: number): Promise<HistoryAppointmentDto[]> {
+    return this.appointmentsService.findAppointmentsByPatient(patientId);
+  }
 
-  return this.appointmentsService.findAppointments(filtersAppointments);
-}
   
 }
