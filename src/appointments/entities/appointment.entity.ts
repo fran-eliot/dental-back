@@ -4,7 +4,7 @@ import { Treatment } from 'src/treatments/entities/treatment.entity';
 import { Slot } from 'src/availabilities/entities/Slot';
 import { StatusAppointments } from '../enums/statusAppointments.enum';
 import { CreatedAppointments } from '../enums/createdAppointments.enum';
-import { Patient } from 'src/patients/entities/patients.entity';
+import { Patient } from 'src/patients/entities/patient.entity';
 
 @Entity('appointments')
 export class Appointment {

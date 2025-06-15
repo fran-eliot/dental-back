@@ -7,16 +7,17 @@ import { AuthModule } from './auth/auth.module';
 import { AvailabiltiesModule } from './availabilities/availabities.module';
 import { ProfessionalAvailability } from './availabilities/entities/ProfessionalAvailability';
 import { Slot } from './availabilities/entities/Slot';
-import { Patient } from './patients/entities/patients.entity';
+import { Patient } from './patients/entities/patient.entity';
 import { PatientsModule } from './patients/patients.module';
 import { Professional } from './professional/entities/profesional.entity';
 import { ProfessionalsModule } from './professional/professionals.module';
 import { Treatment } from './treatments/entities/treatment.entity';
+import { TreatmentsModule } from './treatments/treatments.module';
 import { User } from './users/entities/user.entity';
 import { UsersModule } from './users/users.module';
 
 @Module({
-  imports: [PatientsModule, AppointmentsModule, 
+  imports: [TreatmentsModule, PatientsModule, AppointmentsModule, 
     ConfigModule.forRoot({
       isGlobal: true, // lo hace accesible en todos los módulos sin volver a importarlo, para las variables de entorno
     }),

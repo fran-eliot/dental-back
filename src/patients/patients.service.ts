@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Patient } from './entities/patients.entity';
+import { Patient } from './entities/patient.entity';
 import { Repository } from 'typeorm';
-import { FindPatientDto } from './dtos/find-patients.dto';
+import { FindPatientDto } from './dtos/find-patient.dto';
 
 @Injectable()
 export class PatientsService {
   constructor(
       @InjectRepository(Patient) private readonly patientRepository: Repository<Patient>,
-    
-    ){}
+  ){}
 
   //Traer todos los pacientes
   async findAllPatients(): Promise<FindPatientDto[]> {

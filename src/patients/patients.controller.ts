@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { PatientsService } from './patients.service';
-import { FindPatientDto } from './dtos/find-patients.dto';
+import { FindPatientDto } from './dtos/find-patient.dto';
 import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('patients')

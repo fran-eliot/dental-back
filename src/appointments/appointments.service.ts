@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
 import { DataSource, Repository } from 'typeorm';
 import { Slot } from 'src/availabilities/entities/Slot';
-import { Patient } from 'src/patients/entities/patients.entity';
+import { Patient } from 'src/patients/entities/patient.entity';
 import { Professional } from 'src/professional/entities/profesional.entity';
 import { Treatment } from 'src/treatments/entities/treatment.entity';
 import { ProfessionalAvailability } from 'src/availabilities/entities/ProfessionalAvailability';
@@ -198,6 +198,7 @@ export class AppointmentsService {
 
     return appointments.map(app => ({
       id_reserva: app.id_appointments,
+      paciente_id: app.patient.id_patients,
       paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
       fecha_cita: app.date_appointments,
       tratamiento: app.treatment?.name_treatments ?? 'N/A',
