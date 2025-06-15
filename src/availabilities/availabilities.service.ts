@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Professional } from 'src/professional/entities/profesional.entity';
 import * as dayjs from 'dayjs';
 import { Slot } from './entities/Slot';
 import { ProfessionalAvailability } from './entities/ProfessionalAvailability';
 import { Status } from './enums/status.enum';
+import { GenerateMonthlyAvailabilitiesDto } from './dtos/GenerateMonthlyAvailabilitiesDto';
 
 /**
  * Servicio para gestionar la lógica de negocio relacionada con
@@ -69,6 +70,52 @@ export class AvailabilitiesService {
     await this.availabilityRepo.save(availabilities);
   }
 
+  async generateMonthlyAvailabilities(dto: GenerateMonthlyAvailabilitiesDto) {
+    const { month, year } = dto;
+
+    const startDate = dayjs(`${year}-${String(month).padStart(2, '0')}-01`);
+    const endDate = startDate.endOf('month').add(1, 'day'); // día después del último para que isBefore funcione bien
+
+    const existing = await this.availabilityRepo.findOne({
+      where: {
+        date: Between(startDate.toDate(), endDate.toDate()),
+      },
+    });
+
+    if (existing) {
+      throw new ConflictException(
+        'Ya existen disponibilidades para el mes indicado.'
+      );
+    }
+
+    const professionals = await this.professionalRepo.find({
+      where: { is_active_professionals: true },
+    });
+
+    const slots = await this.slotRepo.find();
+    const availabilities = [];
+
+    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+      for (const professional of professionals) {
+        for (const slot of slots) {
+          availabilities.push(
+            this.availabilityRepo.create({
+              date: date.toDate(),
+              status: 'libre',
+              professional,
+              slot,
+            })
+          );
+        }
+      }
+    }
+
+    await this.availabilityRepo.save(availabilities);
+
+    return {
+      message: `Disponibilidades generadas correctamente para el mes ${month}/${year}.`,
+    };
+  }
 
   /**
    * Devuelve todas las disponibilidades de un profesional en una fecha concreta.
