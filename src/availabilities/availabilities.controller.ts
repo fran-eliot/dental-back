@@ -22,6 +22,7 @@ import { UpdateAvailabilityStatusDto } from './dtos/UpdateAvailabilityStatusDto'
 import { AvailabilityFilterDto } from './dtos/AvailabilityFilterDto';
 import { CleanOldAvailabilitiesDto } from './dtos/CleanOldAvailabilitiesDto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { GenerateMonthlyAvailabilitiesDto } from './dtos/GenerateMonthlyAvailabilitiesDto';
 
 @ApiTags('Disponibilidades')
 @Controller('disponibilidades')
@@ -42,6 +43,22 @@ export class AvailabilitiesController {
   }
 
   /**
+  * Genera disponibilidades para todos los profesionales activos durante
+  * el mes indicado (de lunes a viernes, en tramos de 30 minutos).
+  * Si ya existen disponibilidades para ese mes, se lanza un error.
+  * Ruta: POST /disponibilidades/genera-mes
+  */
+  @Post('genera-mes')
+  @ApiOperation({ summary: 'Generar disponibilidades para un mes específico' })
+  @ApiResponse({ status: 201, description: 'Disponibilidades generadas correctamente para el mes especificado' })
+  @ApiResponse({ status: 409, description: 'Ya existen disponibilidades para el mes especificado' })
+  async generateMonthlyAvailabilities(
+      @Body() dto: GenerateMonthlyAvailabilitiesDto,) {
+      return this.availabilitiesService.generateMonthlyAvailabilities(dto);
+  }
+  
+
+  /**
    * Devuelve las disponibilidades de un profesional para una fecha concreta.
    * Ruta: GET /disponibilidades/:id/:date
    * @param dto Contiene professionalId y date
@@ -55,8 +72,8 @@ export class AvailabilitiesController {
     description: 'Lista de disponibilidades',
     type: ProfessionalAvailability,
     isArray: true
-  })
-  getAvailabilities(@Param() dto: AvailabilityFilterDto): Promise<ProfessionalAvailability[]>{
+    })
+  async getAvailabilities(@Param() dto: AvailabilityFilterDto): Promise<ProfessionalAvailability[]>{
     console.log('llega');
     const date = new Date(dto.date);
     if (isNaN(date.getTime())) {
