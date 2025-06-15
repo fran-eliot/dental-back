@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "src/users/entities/user.entity";
 import { ProfessionalAvailability } from "src/availabilities/entities/ProfessionalAvailability";
+import { Appointment } from "src/appointments/entities/appointment.entity";
 
 @Entity('professionals')
 export class Professional{
@@ -31,4 +32,7 @@ export class Professional{
 
     @OneToMany(() => ProfessionalAvailability, pa => pa.professional)
     availabilities: ProfessionalAvailability[];
+
+    @OneToMany(() => Appointment, appointment => appointment.professional)
+    appointments: Appointment[];
 }

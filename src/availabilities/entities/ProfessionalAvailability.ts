@@ -20,6 +20,4 @@ export class ProfessionalAvailability {
   @ManyToOne(() => Professional, professional => professional.availabilities)
   @JoinColumn({ name: 'professional_id' })
   professional: Professional;
-
-
 }
