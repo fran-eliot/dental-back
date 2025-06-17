@@ -74,7 +74,7 @@ export class AvailabilitiesService {
     const { month, year } = dto;
 
     const startDate = dayjs(`${year}-${String(month).padStart(2, '0')}-01`);
-    const endDate = startDate.endOf('month').add(1, 'day'); // día después del último para que isBefore funcione bien
+    const endDate = startDate.endOf('month');
 
     const existing = await this.availabilityRepo.findOne({
       where: {
@@ -95,7 +95,7 @@ export class AvailabilitiesService {
     const slots = await this.slotRepo.find();
     const availabilities = [];
 
-    for (let date = startDate; date.isBefore(endDate); date = date.add(1, 'day')) {
+    for (let date = startDate; date.isSame(endDate) || date.isBefore(endDate); date = date.add(1, 'day')) {
       for (const professional of professionals) {
         for (const slot of slots) {
           availabilities.push(
