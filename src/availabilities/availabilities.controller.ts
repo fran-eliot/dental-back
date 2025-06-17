@@ -13,6 +13,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { AvailabilitiesService } from './availabilities.service';
 import { ProfessionalAvailability } from './entities/ProfessionalAvailability';
@@ -21,10 +22,14 @@ import { Slot } from './entities/Slot';
 import { UpdateAvailabilityStatusDto } from './dtos/UpdateAvailabilityStatusDto';
 import { AvailabilityFilterDto } from './dtos/AvailabilityFilterDto';
 import { CleanOldAvailabilitiesDto } from './dtos/CleanOldAvailabilitiesDto';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GenerateMonthlyAvailabilitiesDto } from './dtos/GenerateMonthlyAvailabilitiesDto';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('Disponibilidades')
+@ApiBearerAuth('access-token')  //Esto es solo para swagger
 @Controller('disponibilidades')
 export class AvailabilitiesController {
   constructor(private readonly availabilitiesService: AvailabilitiesService) {}
@@ -34,6 +39,8 @@ export class AvailabilitiesController {
    * de lunes a viernes de esta semana en tramos de 30 minutos.
    * Ruta: POST /disponibilidades/genera-semana
    */
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Post('genera-semana')
   @ApiOperation({ summary: 'Generar disponibilidades para esta semana' })
   @ApiResponse({ status: 201, description: 'Disponibilidades generadas correctamente' })
@@ -48,6 +55,8 @@ export class AvailabilitiesController {
   * Si ya existen disponibilidades para ese mes, se lanza un error.
   * Ruta: POST /disponibilidades/genera-mes
   */
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Post('genera-mes')
   @ApiOperation({ summary: 'Generar disponibilidades para un mes específico' })
   @ApiResponse({ status: 201, description: 'Disponibilidades generadas correctamente para el mes especificado' })
@@ -63,6 +72,8 @@ export class AvailabilitiesController {
    * Ruta: GET /disponibilidades/:id/:date
    * @param dto Contiene professionalId y date
    */
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Get(':professionalId/:date')
   @ApiOperation({ summary: 'Obtener disponibilidades de un profesional para una fecha concreta' })
   @ApiParam({ name: 'professionalId', type: Number, description: 'ID del profesional' })
@@ -88,6 +99,8 @@ export class AvailabilitiesController {
    * @param id ID de la disponibilidad
    * @param updateDto Estado nuevo (libre, reservado o no disponible)
    */
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Patch(':id/')
   @ApiOperation({ summary: 'Actualizar estado de una disponibilidad' })
   @ApiParam({ name: 'id', type: Number, description: 'ID de la disponibilidad' })
@@ -106,6 +119,8 @@ export class AvailabilitiesController {
    * Ruta: GET /disponibilidades/slots-libres/:professionalId/:date
    * @param dto Contiene professionalId y date
    */
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Get('slots-libres/:professionalId/:date')
   @ApiOperation({ summary: 'Obtener slots libres de un profesional en una fecha concreta' })
   @ApiParam({ name: 'professionalId', type: Number, description: 'ID del profesional' })
@@ -125,6 +140,8 @@ export class AvailabilitiesController {
    * Ruta: DELETE /disponibilidades/limpieza/:beforeDate
    * @param dto Contiene beforeDate como string (YYYY-MM-DD)
    */
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Delete('limpieza/:beforeDate')
   @ApiOperation({ summary: 'Eliminar disponibilidades anteriores a una fecha' })
   @ApiParam({ name: 'beforeDate', type: String, description: 'Fecha límite en formato YYYY-MM-DD' })
