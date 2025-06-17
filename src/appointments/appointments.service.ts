@@ -183,6 +183,81 @@ export class AppointmentsService {
       };
     });
   }
+
+//Para buscar citas por rango de fechas y profesional
+//Este método es para el calendario de citas, donde se pueden buscar por rango de fechas y profesional
+//Se puede buscar por rango de fechas, por profesional o ambos
+//Si no se pasa ningún filtro, devuelve todas las citas
+async findAppointmentsByDates(filters: {
+    start_date?: string;
+    end_date?: string;
+    professional_id?: number;
+  }): Promise<AppointmentResponseDto[]> {
+    const query = this.appointmentRepository
+      .createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.patient', 'patient')
+      .leftJoinAndSelect('appointment.professional', 'professional')
+      .leftJoinAndSelect('appointment.treatment', 'treatment')
+      .leftJoinAndSelect('appointment.slot', 'slot');
+
+    if (filters.professional_id) {
+      query.andWhere('professional.id_professionals = :professionalId', {
+        professionalId: filters.professional_id,
+      });
+    }
+
+    if (filters.start_date && filters.end_date) {
+      query.andWhere('appointment.date_appointments BETWEEN :start AND :end', {
+        start: filters.start_date,
+        end: filters.end_date,
+      });
+    } else if (filters.start_date) {
+      query.andWhere('appointment.date_appointments >= :start', {
+        start: filters.start_date,
+      });
+    } else if (filters.end_date) {
+      query.andWhere('appointment.date_appointments <= :end', {
+        end: filters.end_date,
+      });
+    }
+
+    const appointments = await query.getMany();
+
+    return appointments.map(app => {
+      //Calcular hora_fin a partir de startTime y duration_minutes_appointments
+      let hours = 0;
+      let minutes = 0;
+
+      if (app.slot && app.slot.startTime) {
+        const timeParts = app.slot.startTime.split(':').map(Number);
+        hours = timeParts[0];
+        minutes = timeParts[1];
+      }
+
+      const startDate = new Date();
+      startDate.setHours(hours, minutes, 0, 0);
+
+      const duration = app.duration_minutes_appointments || 0;
+      const endDate = new Date(startDate.getTime() + duration * 60000);
+      const hora_fin = endDate.toTimeString().substring(0, 5); // HH:MM
+
+      return {
+        id_reserva: app.id_appointments,
+        paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
+        profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
+        tratamiento: app.treatment?.name_treatments ?? 'N/A',
+        fecha_cita: app.date_appointments,
+        hora_inicio: app.slot?.startTime ?? 'N/A',
+        hora_fin,
+        periodo: app.slot?.period,
+        duracion: app.duration_minutes_appointments,
+        estado: app.status_appointments,
+        motivo_cancelacion: app.cancellation_reason_appointments ?? '',
+        creado_por: app.created_by_appointments,
+      };
+    });
+  }
+
   //Para historial del paciente
   async findAppointmentsByPatient(patient_id: number): Promise<HistoryAppointmentDto[]> {
     const appointments = await this.appointmentRepository

@@ -43,6 +43,25 @@ export class AppointmentsController {
     return this.appointmentsService.findAppointments(filtersAppointments);
   }
 
+  @Get('reservas-por-fechas')
+  @ApiOperation({ summary: 'Buscar reservas por rango de fechas' })
+  @ApiQuery({ name: 'startDate', required: true, type: String, description: 'Fecha de inicio (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'endDate', required: true, type: String, description: 'Fecha de fin (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'professional_id', required: false, type: Number, description: 'ID del profesional' })
+  async findAppointmentsByDates(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+    @Query('professional_id') professional_id?: number,
+  ): Promise<AppointmentResponseDto[]> {
+    const filtersAppointments: { startDate: string; endDate: string; professional_id?: number } = {
+      startDate,
+      endDate,
+    };
+
+    if (professional_id) filtersAppointments.professional_id = Number(professional_id);
+    return this.appointmentsService.findAppointmentsByDates(filtersAppointments);
+  }
+
   @Get('history/:patientId')
   @ApiOperation({ summary: 'Obtener historial de citas de un paciente' })
   @ApiParam({ name: 'patientId', type: Number, description: 'ID del paciente' })
