@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
@@ -32,6 +33,12 @@ export class ProfessionalsController {
   @ApiOperation({ summary: 'Obtenemos todos los profesionales' })
   findAllProfessionals() {
     return this.professionalsService.findAllProfessionals();
+  }
+
+  @Get('por-user/:userId')
+  @ApiOperation({ summary: 'Obtenemos un profesional por userId' })
+  findByUserId(@Param('userId', ParseIntPipe) userId: number) {
+    return this.professionalsService.findProfessionalByUserId(userId);
   }
 
 }

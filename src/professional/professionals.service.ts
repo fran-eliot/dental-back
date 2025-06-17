@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { Professional } from './entities/profesional.entity';
 import { Repository } from 'typeorm';
@@ -69,9 +69,31 @@ export class ProfessionalsService {
     
   }
   //Traer todos los professionales
-    async findAllProfessionals(): Promise<FindProfessionalDto[]> {
-      return (await this.professionalRepository.find())
-        .map(pro => new FindProfessionalDto(pro.id_professionals, pro.nif_professionals, pro.license_number_professionals, pro.name_professionals, pro.last_name_professionals,pro.phone_professionals, pro.email_professionals, pro.assigned_room_professionals, pro.is_active_professionals));
+  async findAllProfessionals(): Promise<FindProfessionalDto[]> {
+    return (await this.professionalRepository.find())
+      .map(pro => new FindProfessionalDto(pro.id_professionals, pro.nif_professionals, pro.license_number_professionals, pro.name_professionals, pro.last_name_professionals,pro.phone_professionals, pro.email_professionals, pro.assigned_room_professionals, pro.is_active_professionals));
+  }
+
+  async findProfessionalByUserId(user_id: number): Promise<FindProfessionalDto> {
+    const professional = await this.professionalRepository.findOne({
+      where: { user: { id_users: user_id } },
+      relations: ['user'],
+    });
+
+    if (!professional) {
+      throw new NotFoundException(`No se encontró profesional asociado al user_id: ${user_id}`);
     }
 
+    return new FindProfessionalDto(
+      professional.id_professionals,
+      professional.nif_professionals,
+      professional.license_number_professionals,
+      professional.name_professionals,
+      professional.last_name_professionals,
+      professional.phone_professionals,
+      professional.email_professionals,
+      professional.assigned_room_professionals,
+      professional.is_active_professionals,
+    );
+  }
 }
