@@ -37,26 +37,22 @@ export class PatientsService {
         )
     );
   }
+  //buscar todos los pacientes
+  async findAllPatients(): Promise<FindPatientDto[]> {
+    const patients = await this.patientRepository.find({
+      order: { last_name_patients: 'ASC' }, // opcional, para ordenar por apellido
+    });
 
-  /*async findAllPatientsPaginated(page = 1, pageSize = 10): Promise<PaginatedPatientsDto> {
-      const [patients, total] = await this.patientRepository.findAndCount({
-        skip: (page - 1) * pageSize,
-        take: pageSize,
-        order: { last_name_patients: 'ASC' }, // ordenar por apellido
-      });
-
-      const data = patients.map(patient => new FindPatientDto(
-        patient.name_patients,
-        patient.last_name_patients,
-        patient.phone_patients,
-        patient.email_patients,
-        patient.is_active_patients,
-        patient.id_patients,
-        patient.nif_patients,
-      ));
-
-      return new PaginatedPatientsDto(data, total, page, pageSize);
-  }*/
+    return patients.map(patient => new FindPatientDto(
+      patient.name_patients,
+      patient.last_name_patients,
+      patient.phone_patients,
+      patient.email_patients,
+      patient.is_active_patients,
+      patient.id_patients,
+      patient.nif_patients,
+    ));
+  }
   //Encontrar Paciente por id
   async findPatientById(id: number): Promise<FindPatientDto> {
   const patient = await this.patientRepository.findOne({ where: { id_patients: id } });

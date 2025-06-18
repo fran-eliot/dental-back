@@ -25,13 +25,13 @@ import { CreatePatientDto } from './dtos/create-patient.dto';
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
-  /*@UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
   @Roles('admin', 'dentista') //para que roles esta permitido
   @Get('all')
   @ApiOperation({ summary: 'Obtenemos todos los pacientes' })
   findAllPatients() {
-    return this.patientsService.findAllPatientsPaginated();
-  }*/
+    return this.patientsService.findAllPatients();
+  }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin', 'dentista')
