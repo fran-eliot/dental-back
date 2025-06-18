@@ -1,6 +1,7 @@
-import { IsInt, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsInt, IsEnum, IsOptional, IsString, IsDateString, IsNumber } from 'class-validator';
 import { StatusAppointments } from '../enums/statusAppointments.enum';
 import { CreatedAppointments } from '../enums/createdAppointments.enum';
+import { Type } from 'class-transformer';
 
 
 export class FindAppointmentDto {
@@ -43,6 +44,15 @@ export class FindAppointmentDto {
   @IsEnum(CreatedAppointments)
   @IsOptional()
   created_by_appointments?: CreatedAppointments = CreatedAppointments.ADMIN;
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  page?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  pageSize?: number;
 
   constructor(id_appointments?: number, patient_id?: number, professional_id?: number, treatments_id?: number, slot_id?: number, date_appointments?: string, duration_minutes_appointments?: number, status_appointments?: StatusAppointments, cancellation_reason_appointments?: string, created_by_appointments?: CreatedAppointments) {
     this.id_appointments = id_appointments;

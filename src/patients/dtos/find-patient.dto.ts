@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 
 export class FindPatientDto {
   @IsInt()
@@ -6,19 +6,25 @@ export class FindPatientDto {
   id_patients?: number;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
+  @Length(8, 20)  
   nif_patients?: string;
 
   @IsString()
+  @IsNotEmpty()
   name_patients: string;
 
   @IsString()
+  @IsNotEmpty()
   last_name_patients: string;
 
   @IsString()
+  @IsNotEmpty()
+  @Length(9, 15) 
   phone_patients: string;
 
-  @IsString()
+  @IsEmail()
+  @IsNotEmpty()
   email_patients: string;
 
   @IsBoolean()
@@ -34,7 +40,7 @@ export class FindPatientDto {
     nif_patients?: string
   ) {
     this.id_patients = id_patients;
-    this.nif_patients = nif_patients;
+    this.nif_patients = nif_patients || '';
     this.name_patients = name_patients;
     this.last_name_patients = last_name_patients;
     this.phone_patients = phone_patients;

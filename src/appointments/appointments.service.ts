@@ -11,6 +11,7 @@ import { ProfessionalAvailability } from 'src/availabilities/entities/Profession
 import { FindAppointmentDto } from './dtos/find-appointment.dto';
 import { AppointmentResponseDto } from './dtos/response-appointment.dto';
 import { HistoryAppointmentDto } from './dtos/history-appointment.dto';
+import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
 
 
 @Injectable()
@@ -125,7 +126,23 @@ export class AppointmentsService {
   }
 
   //Nos traemos toda las reservas filtradas por id_professional y fecha
-  async findAppointments(filters: {date_appointments?: string, professional_id?:number}): Promise<AppointmentResponseDto[]> {
+  async findAppointments(filters: {date_appointments?: string, professional_id?:number, page?: number,
+  pageSize?: number}): Promise<{
+    data: AppointmentResponseDto[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    
+    const {
+      date_appointments,
+      professional_id,
+      page = 1,
+      pageSize = 10
+    } = filters;
+
+    const skip = (page - 1) * pageSize;
+
     const query = this.appointmentRepository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.patient', 'patient')
@@ -146,10 +163,14 @@ export class AppointmentsService {
       });
     }
 
-    const appointments = await query.getMany();
+    const [appointments, total] = await query
+      .orderBy('appointment.date_appointments', 'DESC')
+      .skip(skip)
+      .take(pageSize)
+      .getManyAndCount();
 
     // Mapea los resultados con los datos que necesito
-    return appointments.map(app => {
+    const data = appointments.map(app => {
       //Calcular hora_fin a partir de startTime y duration_minutes_appointments
       let hours = 0;
       let minutes = 0;
@@ -165,6 +186,7 @@ export class AppointmentsService {
 
       const duration = app.duration_minutes_appointments || 0;
       const endDate = new Date(startDate.getTime() + duration * 60000);
+      const hora_inicio = app.slot?.startTime ? app.slot.startTime.substring(0, 5) : 'N/A';
       const hora_fin = endDate.toTimeString().substring(0, 5); // HH:MM
 
       return {
@@ -173,7 +195,7 @@ export class AppointmentsService {
         profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
         tratamiento: app.treatment?.name_treatments ?? 'N/A',
         fecha_cita: app.date_appointments,
-        hora_inicio: app.slot?.startTime ?? 'N/A',
+        hora_inicio,
         hora_fin,
         periodo: app.slot?.period,
         duracion: app.duration_minutes_appointments,
@@ -182,6 +204,12 @@ export class AppointmentsService {
         creado_por: app.created_by_appointments,
       };
     });
+    return {
+      data,
+      total,
+      page,
+      pageSize
+    };
   }
   //Para historial del paciente
   async findAppointmentsByPatient(patient_id: number): Promise<HistoryAppointmentDto[]> {
@@ -206,5 +234,73 @@ export class AppointmentsService {
       profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
     }));
   }
-  
+
+  //Actualizar estado/motivo y si es cancelada que me libere los slots de disponibilidades
+  async updateAppointmentStatus(id_appointments: number, updateDto: UpdateAppointmentDto): Promise<Appointment> {
+    return await this.dataSource.transaction(async (manager) => {
+      const appointment = await manager.findOne(Appointment, {
+        where: { id_appointments },
+        relations: ['slot', 'professional'],
+      });
+
+      if (!appointment) {
+        throw new BadRequestException('La reserva no existe');
+      }
+
+      const previousStatus = appointment.status_appointments;
+      appointment.status_appointments = updateDto.status_appointments;
+
+      // Actualizar cancellation_reason_appointments si viene en el DTO
+      if (updateDto.cancellation_reason_appointments !== undefined) {
+        appointment.cancellation_reason_appointments = updateDto.cancellation_reason_appointments;
+      }
+
+      const updatedAppointment = await manager.save(appointment);
+
+      // Si cambia a cancelada, liberar slots
+      if (
+        previousStatus !== 'cancelada' &&
+        updateDto.status_appointments === 'cancelada'
+      ) {
+        const availabilitiesToFree = await manager
+          .getRepository(ProfessionalAvailability)
+          .createQueryBuilder('av')
+          .leftJoinAndSelect('av.slot', 'slot')
+          .where('av.professional = :professionalId', {
+            professionalId: appointment.professional.id_professionals,
+          })
+          .andWhere('av.date = :date', {
+            date: appointment.date_appointments,
+          })
+          .andWhere('slot.start_time_slots >= :startTime', {
+            startTime: appointment.slot.startTime,
+          })
+          .andWhere('av.status = :status', { status: 'reservado' })
+          .orderBy('slot.startTime', 'ASC')
+          .getMany();
+
+        let totalMinutes = 0;
+        const slotsToFree: ProfessionalAvailability[] = [];
+
+        for (const av of availabilitiesToFree) {
+          if (slotsToFree.length > 0) {
+            const prevSlot = slotsToFree[slotsToFree.length - 1].slot;
+            if (prevSlot.endTime !== av.slot.startTime) break;
+          }
+
+          const minutes = this.calculateSlotDuration(av.slot);
+          totalMinutes += minutes;
+          slotsToFree.push(av);
+
+          if (totalMinutes >= appointment.duration_minutes_appointments) break;
+        }
+
+        for (const av of slotsToFree) {
+          av.status = 'libre';
+          await manager.save(av);
+        }
+      }
+      return updatedAppointment;
+    });
+  }
 }

@@ -21,6 +21,7 @@ import { HistoryAppointmentDto } from './dtos/history-appointment.dto';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
 
 @ApiTags('appointments')
 @ApiBearerAuth('access-token') //Esto es solo para swagger
@@ -43,13 +44,17 @@ export class AppointmentsController {
   @ApiResponse({ status: 200, description: 'Listado de reservas', type: [AppointmentResponseDto]})
   @ApiQuery({ name: 'professional_id', required: false, type: Number, description: 'ID del profesional' })
   @ApiQuery({ name: 'date_appointments', required: false, type: String, description: 'Fecha de la cita (YYYY-MM-DD)' })
-  async findAppointments(
-  @Query('professional_id') professional_id?: number, @Query('date_appointments') date_appointments?: string,): Promise<AppointmentResponseDto[]> {
-    const filtersAppointments: { professional_id?: number; date_appointments?: string } = {};
+  async findAppointments(@Query() filters: FindAppointmentDto): Promise<{
+    data: AppointmentResponseDto[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    if (filters.professional_id) filters.professional_id = Number(filters.professional_id);
+    if (filters.page) filters.page = Number(filters.page);
+    if (filters.pageSize) filters.pageSize = Number(filters.pageSize);
 
-    if (professional_id) filtersAppointments.professional_id = Number(professional_id);
-    if (date_appointments) filtersAppointments.date_appointments = date_appointments;
-    return this.appointmentsService.findAppointments(filtersAppointments);
+    return this.appointmentsService.findAppointments(filters);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
@@ -65,4 +70,19 @@ export class AppointmentsController {
   async getHistoryByPatient(@Param('patientId') patientId: number): Promise<HistoryAppointmentDto[]> {
     return this.appointmentsService.findAppointmentsByPatient(patientId);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'dentista')
+  @Patch('actualizar-estado/:id_reserva')
+  @ApiOperation({ summary: 'Actualizar el estado de una reserva por ID' })
+  @ApiParam({ name: 'id_reserva', type: Number, description: 'ID de la reserva' })
+  @ApiBody({ type: UpdateAppointmentDto })
+  @ApiResponse({ status: 200, description: 'Reserva actualizada correctamente', type: Appointment })
+  async updateStatus(
+    @Param('id_reserva') id_appointments: number,
+    @Body() updateDto: UpdateAppointmentDto
+  ): Promise<Appointment> {
+    return this.appointmentsService.updateAppointmentStatus(id_appointments, updateDto);
+  }
+
 }
