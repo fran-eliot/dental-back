@@ -6,22 +6,32 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ProfessionalsService } from './professionals.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
+@ApiTags('professionals')
+@ApiBearerAuth('access-token') //Esto es solo para swagger
 @Controller('professionals')
 export class ProfessionalsController {
   constructor(private readonly professionalsService: ProfessionalsService) {}
 
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Post('alta')
   @ApiOperation({ summary: 'Dar de alta un nuevo professional' })
   create(@Body() createProfessionalDto: CreateProfessionalDto) {
     return this.professionalsService.newProfessional(createProfessionalDto);
   }
-
+  
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Put('actualizacion/:id_professionals')
   @ApiOperation({ summary: 'Actualización de un profesional' })
   updateProfessional(@Param("id_professionals") id_professionals: number , @Body() updateProfessionalDto: UpdateProfessionalDto){
@@ -29,6 +39,8 @@ export class ProfessionalsController {
   }
 
   //Traemos todos los usuarios
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin', 'dentista') //para que roles esta permitido
   @Get('all')
   @ApiOperation({ summary: 'Obtenemos todos los profesionales' })
   findAllProfessionals() {

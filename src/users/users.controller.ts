@@ -7,15 +7,18 @@ import { User } from './entities/user.entity';
 import { FindUserDto } from './dto/find-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from './enums/rol.enum';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('users')
-@ApiBearerAuth('access-token') //Asi es como se llama en el main.ts
-@UseGuards(JwtAuthGuard) //Si lo pongo aqui me protege todas las rutas, si solo quiero alguna lo tengo que poner solo en esa
+@ApiBearerAuth('access-token') //Esto es solo para swagger
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   //Alta de usuario
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Post('alta')
   @ApiOperation({ summary: 'Dar de alta un nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario creado correctamente' })
@@ -24,6 +27,8 @@ export class UsersController {
   }
 
   //Traemos todos los usuarios
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Get('')
   @ApiOperation({ summary: 'Obtener todos los usuarios' })
   findAll() {
@@ -31,6 +36,8 @@ export class UsersController {
   }
 
   //Buscar usuario por el id, viene como string y hay que pasarlo a num
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Get('buscar/:id')
   @ApiOperation({ summary: 'Obtener un usuario por su id' })
   @ApiParam({ name: 'id', type: Number })
@@ -42,6 +49,8 @@ export class UsersController {
   }
 
   //Actualizamos la contraseña -- funciona con postman
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Patch('/:id/update_password')
   @ApiOperation({ summary: 'Actualizamos la contraseña de un usuario' })
   @ApiParam({ name: 'id', type: Number, description: 'ID del usuario' })
@@ -53,6 +62,8 @@ export class UsersController {
   }
 
   //Actualizamos el rol---funciona con postman
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Patch('/:id/rol_users')
   @ApiOperation({ summary: 'Actualizamos el rol de un usuario' })
   @ApiParam({ name: 'id', type: Number })
@@ -70,6 +81,8 @@ export class UsersController {
   }
 
   //Cambiamos de activo a inactivo y viceversa
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Patch(':id/toggle_status')
   @ApiOperation({ summary: 'Actualiza el status de un usuario' })
   @ApiParam({ name: 'id', type: Number })
@@ -80,6 +93,8 @@ export class UsersController {
   }
 
   //Actualizamos el username en users y tb en professionals
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin') //para que roles esta permitido
   @Patch(':id/username')
   @ApiOperation({ summary: 'Actualiza el username' })
   @ApiBody({ schema: { type: 'object', properties: { username_users: { type: 'string' } } } })
