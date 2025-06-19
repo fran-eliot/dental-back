@@ -9,10 +9,9 @@ import { Professional } from 'src/professional/entities/profesional.entity';
 import { Treatment } from 'src/treatments/entities/treatment.entity';
 import { ProfessionalAvailability } from 'src/availabilities/entities/ProfessionalAvailability';
 import { FindAppointmentDto } from './dtos/find-appointment.dto';
-import { AppointmentResponseDto } from './dtos/response-appointment.dto';
 import { HistoryAppointmentDto } from './dtos/history-appointment.dto';
 import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
-
+import { AppointmentResponseDto } from './dtos/response-appointment.dto';
 
 @Injectable()
 export class AppointmentsService {
@@ -124,8 +123,43 @@ export class AppointmentsService {
       return savedAppointment;
     });
   }
+  //Nos traemos todas las reservas sin paginar
+  async findAppointmentsAll(filters: {date_appointments?: string, professional_id?:number}): Promise<AppointmentResponseDto[]> {
+    const query = this.appointmentRepository
+      .createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.patient', 'patient')
 
-  //Nos traemos toda las reservas filtradas por id_professional y fecha
+    const appointments = await query.getMany();
+    return appointments.map(app => {
+      //Calcular hora_fin a partir de startTime y duration_minutes_appointments
+      let hours = 0;
+      let minutes = 0;
+      const duration = app.duration_minutes_appointments || 0;
+      const appointmentDate = new Date(app.date_appointments);
+      const endDate = new Date(appointmentDate.getTime() + duration * 60000);
+      const hora_inicio = app.slot?.startTime ? app.slot.startTime.substring(0, 5) : 'N/A';
+      const hora_fin = endDate.toTimeString().substring(0, 5); // HH:MM
+
+      return {
+        id_reserva: app.id_appointments,
+        paciente: app.patient
+          ? `${app.patient.name_patients} ${app.patient.last_name_patients}`
+          : 'N/A',
+        profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
+        tratamiento: app.treatment?.name_treatments ?? 'N/A',
+        fecha_cita: app.date_appointments,
+        hora_inicio,
+        hora_fin,
+        periodo: app.slot?.period,
+        duracion: app.duration_minutes_appointments,
+        estado: app.status_appointments,
+        motivo_cancelacion: app.cancellation_reason_appointments ?? '',
+        creado_por: app.created_by_appointments,
+      };
+    });
+  }
+
+  //Nos traemos toda las reservas filtradas por id_professional y fecha //Cuidado que estan paginadas
   async findAppointments(filters: {date_appointments?: string, professional_id?:number, page?: number,
   pageSize?: number}): Promise<{
     data: AppointmentResponseDto[];

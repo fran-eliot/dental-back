@@ -56,7 +56,22 @@ export class AppointmentsController {
 
     return this.appointmentsService.findAppointments(filters);
   }
+  //sin paginación
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin', 'dentista') //para que roles esta permitido
+  @Get('reservas/all')
+  @ApiResponse({ status: 200, description: 'Listado de reservas', type: [AppointmentResponseDto]})
+  @ApiQuery({ name: 'professional_id', required: false, type: Number, description: 'ID del profesional' })
+  @ApiQuery({ name: 'date_appointments', required: false, type: String, description: 'Fecha de la cita (YYYY-MM-DD)' })
+  async findAppointmentsAll(
+  @Query('professional_id') professional_id?: number, @Query('date_appointments') date_appointments?: string,): Promise<AppointmentResponseDto[]> {
+    const filtersAppointments: { professional_id?: number; date_appointments?: string } = {};
+    if (professional_id) filtersAppointments.professional_id = Number(professional_id);
+    if (date_appointments) filtersAppointments.date_appointments = date_appointments;
 
+    return this.appointmentsService.findAppointmentsAll(filtersAppointments);
+  }
+  
   @Get('reservas-por-fechas')
   @ApiOperation({ summary: 'Buscar reservas por rango de fechas' })
   @ApiQuery({ name: 'startDate', required: true, type: String, description: 'Fecha de inicio (YYYY-MM-DD)' })
