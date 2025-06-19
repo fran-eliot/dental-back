@@ -73,7 +73,7 @@ export class AvailabilitiesController {
    * @param dto Contiene professionalId y date
    */
   @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
-  @Roles('admin') //para que roles esta permitido
+  @Roles('admin','dentista') //para que roles esta permitido
   @Get(':professionalId/:date')
   @ApiOperation({ summary: 'Obtener disponibilidades de un profesional para una fecha concreta' })
   @ApiParam({ name: 'professionalId', type: Number, description: 'ID del profesional' })
@@ -100,7 +100,7 @@ export class AvailabilitiesController {
    * @param updateDto Estado nuevo (libre, reservado o no disponible)
    */
   @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
-  @Roles('admin') //para que roles esta permitido
+  @Roles('admin','dentista') //para que roles esta permitido
   @Patch(':id/')
   @ApiOperation({ summary: 'Actualizar estado de una disponibilidad' })
   @ApiParam({ name: 'id', type: Number, description: 'ID de la disponibilidad' })
