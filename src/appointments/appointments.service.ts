@@ -126,32 +126,46 @@ export class AppointmentsService {
   //Nos traemos todas las reservas sin paginar
   async findAppointmentsAll(filters: {date_appointments?: string, professional_id?:number}): Promise<AppointmentResponseDto[]> {
     const query = this.appointmentRepository
-      .createQueryBuilder('appointment')
-      .leftJoinAndSelect('appointment.patient', 'patient')
+    .createQueryBuilder('appointment')
+    .leftJoinAndSelect('appointment.patient', 'patient')
+    .leftJoinAndSelect('appointment.professional', 'professional')
+    .leftJoinAndSelect('appointment.slot', 'slot')
+    .leftJoinAndSelect('appointment.treatment', 'treatment');
+
+    // Aplicar filtros si existen
+    if (filters.professional_id) {
+      query.andWhere('appointment.professional = :professional_id', { professional_id: filters.professional_id });
+    }
+
+    if (filters.date_appointments) {
+      query.andWhere('DATE(appointment.date_appointments) = :date_appointments', {
+        date_appointments: filters.date_appointments,
+      });
+    }
 
     const appointments = await query.getMany();
+
     return appointments.map(app => {
-      //Calcular hora_fin a partir de startTime y duration_minutes_appointments
-      let hours = 0;
-      let minutes = 0;
       const duration = app.duration_minutes_appointments || 0;
       const appointmentDate = new Date(app.date_appointments);
       const endDate = new Date(appointmentDate.getTime() + duration * 60000);
       const hora_inicio = app.slot?.startTime ? app.slot.startTime.substring(0, 5) : 'N/A';
-      const hora_fin = endDate.toTimeString().substring(0, 5); // HH:MM
+      const hora_fin = endDate.toTimeString().substring(0, 5);
 
       return {
         id_reserva: app.id_appointments,
         paciente: app.patient
           ? `${app.patient.name_patients} ${app.patient.last_name_patients}`
           : 'N/A',
-        profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
+        profesional: app.professional
+          ? `${app.professional.name_professionals} ${app.professional.last_name_professionals}`
+          : 'N/A',
         tratamiento: app.treatment?.name_treatments ?? 'N/A',
         fecha_cita: app.date_appointments,
         hora_inicio,
         hora_fin,
         periodo: app.slot?.period,
-        duracion: app.duration_minutes_appointments,
+        duracion: duration,
         estado: app.status_appointments,
         motivo_cancelacion: app.cancellation_reason_appointments ?? '',
         creado_por: app.created_by_appointments,

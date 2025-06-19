@@ -72,6 +72,8 @@ export class AppointmentsController {
     return this.appointmentsService.findAppointmentsAll(filtersAppointments);
   }
   
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin', 'dentista') //para que roles esta permitido
   @Get('reservas-por-fechas')
   @ApiOperation({ summary: 'Buscar reservas por rango de fechas' })
   @ApiQuery({ name: 'startDate', required: true, type: String, description: 'Fecha de inicio (YYYY-MM-DD)' })
