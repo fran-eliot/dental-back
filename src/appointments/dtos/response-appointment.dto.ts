@@ -1,6 +1,7 @@
 export class AppointmentResponseDto {
   id_reserva: number;
   paciente: string;
+  paciente_id:number;
   profesional: string;
   tratamiento: string;
   fecha_cita: string;

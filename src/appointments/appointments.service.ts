@@ -157,6 +157,7 @@ export class AppointmentsService {
         paciente: app.patient
           ? `${app.patient.name_patients} ${app.patient.last_name_patients}`
           : 'N/A',
+        paciente_id: app.patient?.id_patients ?? 0,
         profesional: app.professional
           ? `${app.professional.name_professionals} ${app.professional.last_name_professionals}`
           : 'N/A',
@@ -240,6 +241,7 @@ export class AppointmentsService {
       return {
         id_reserva: app.id_appointments,
         paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
+        paciente_id: app.patient.id_patients,
         profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
         tratamiento: app.treatment?.name_treatments ?? 'N/A',
         fecha_cita: app.date_appointments,
@@ -320,6 +322,7 @@ async findAppointmentsByDates(filters: {
       return {
         id_reserva: app.id_appointments,
         paciente: `${app.patient.name_patients} ${app.patient.last_name_patients}`,
+        paciente_id: app.patient?.id_patients ?? 0,
         profesional: `${app.professional.name_professionals} ${app.professional.last_name_professionals}`,
         tratamiento: app.treatment?.name_treatments ?? 'N/A',
         fecha_cita: app.date_appointments,
