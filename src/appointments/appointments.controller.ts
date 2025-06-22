@@ -87,7 +87,7 @@ export class AppointmentsController {
     const filtersAppointments: { startDate: string; endDate: string; professional_id?: number } = {
       startDate,
       endDate,
-    };
+      professional_id };
 
     if (professional_id) filtersAppointments.professional_id = Number(professional_id);
     return this.appointmentsService.findAppointmentsByDates(filtersAppointments);
