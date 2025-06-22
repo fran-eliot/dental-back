@@ -267,10 +267,11 @@ export class AppointmentsService {
 //Se puede buscar por rango de fechas, por profesional o ambos
 //Si no se pasa ningún filtro, devuelve todas las citas
 async findAppointmentsByDates(filters: {
-    start_date?: string;
-    end_date?: string;
+    startDate?: string;
+    endDate?: string;
     professional_id?: number;
   }): Promise<AppointmentResponseDto[]> {
+
     const query = this.appointmentRepository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.patient', 'patient')
@@ -284,21 +285,25 @@ async findAppointmentsByDates(filters: {
       });
     }
 
-    if (filters.start_date && filters.end_date) {
+    if (filters.startDate && filters.endDate) {
       query.andWhere('appointment.date_appointments BETWEEN :start AND :end', {
-        start: filters.start_date,
-        end: filters.end_date,
+        start: filters.startDate,
+        end: filters.endDate,
       });
-    } else if (filters.start_date) {
+    } else if (filters.startDate) {
       query.andWhere('appointment.date_appointments >= :start', {
-        start: filters.start_date,
+        start: filters.startDate,
       });
-    } else if (filters.end_date) {
+    } else if (filters.endDate) {
       query.andWhere('appointment.date_appointments <= :end', {
-        end: filters.end_date,
+        end: filters.endDate,
       });
     }
 
+    if (!filters.startDate || !filters.endDate) {
+      throw new BadRequestException('Se requieren start_date y end_date');
+  }
+    console.log('Consultando con:', filters.startDate, filters.endDate);
     const appointments = await query.getMany();
 
     return appointments.map(app => {
