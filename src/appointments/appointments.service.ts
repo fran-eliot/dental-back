@@ -232,7 +232,6 @@ export class AppointmentsService {
 
       const startDate = new Date();
       startDate.setHours(hours, minutes, 0, 0);
-
       const duration = app.duration_minutes_appointments || 0;
       const endDate = new Date(startDate.getTime() + duration * 60000);
       const hora_inicio = app.slot?.startTime ? app.slot.startTime.substring(0, 5) : 'N/A';
