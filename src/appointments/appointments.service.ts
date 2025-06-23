@@ -1,3 +1,4 @@
+import { App } from 'supertest/types';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -123,6 +124,32 @@ export class AppointmentsService {
       return savedAppointment;
     });
   }
+  //Para verificar las reservas por paciente, fecha y status
+  private async verifyAppointment(
+    manager: any,
+    patient_id: number,
+    date: string,
+    startTime: string
+  ): Promise<void> {
+    const overlappingAppointment = await manager
+      .getRepository(Appointment)
+      .createQueryBuilder('a')
+      .leftJoinAndSelect('a.slot', 'slot')
+      .where('a.patient = :patientId', { patientId: patient_id })
+      .andWhere('a.date_appointments = :date', { date })
+      .andWhere('slot.startTime = :startTime', { startTime })
+      .andWhere('a.status_appointments IN (:...activeStatuses)', {
+        activeStatuses: ['pendiente', 'confirmada', 'realizada'],
+      })
+      .getOne();
+
+    if (overlappingAppointment) {
+      throw new BadRequestException(
+        'Ya existe una cita activa para este paciente en esa fecha y hora.'
+      );
+    }
+  }
+
   //Nos traemos todas las reservas sin paginar
   async findAppointmentsAll(filters: {date_appointments?: string, professional_id?:number}): Promise<AppointmentResponseDto[]> {
     const query = this.appointmentRepository
@@ -171,6 +198,12 @@ export class AppointmentsService {
         motivo_cancelacion: app.cancellation_reason_appointments ?? '',
         creado_por: app.created_by_appointments,
       };
+    });
+  }
+  //Trae todas las reservas sin filtros
+  async getAllAppointments(): Promise<Appointment[]> {
+    return this.appointmentRepository.find({
+      relations: ['patient', 'professional', 'treatment', 'slot'],
     });
   }
 
@@ -266,10 +299,11 @@ export class AppointmentsService {
 //Se puede buscar por rango de fechas, por profesional o ambos
 //Si no se pasa ningún filtro, devuelve todas las citas
 async findAppointmentsByDates(filters: {
-    start_date?: string;
-    end_date?: string;
+    startDate?: string;
+    endDate?: string;
     professional_id?: number;
   }): Promise<AppointmentResponseDto[]> {
+
     const query = this.appointmentRepository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.patient', 'patient')
@@ -283,21 +317,25 @@ async findAppointmentsByDates(filters: {
       });
     }
 
-    if (filters.start_date && filters.end_date) {
+    if (filters.startDate && filters.endDate) {
       query.andWhere('appointment.date_appointments BETWEEN :start AND :end', {
-        start: filters.start_date,
-        end: filters.end_date,
+        start: filters.startDate,
+        end: filters.endDate,
       });
-    } else if (filters.start_date) {
+    } else if (filters.startDate) {
       query.andWhere('appointment.date_appointments >= :start', {
-        start: filters.start_date,
+        start: filters.startDate,
       });
-    } else if (filters.end_date) {
+    } else if (filters.endDate) {
       query.andWhere('appointment.date_appointments <= :end', {
-        end: filters.end_date,
+        end: filters.endDate,
       });
     }
 
+    if (!filters.startDate || !filters.endDate) {
+      throw new BadRequestException('Se requieren start_date y end_date');
+  }
+    console.log('Consultando con:', filters.startDate, filters.endDate);
     const appointments = await query.getMany();
 
     return appointments.map(app => {
