@@ -1,3 +1,4 @@
+import { App } from 'supertest/types';
 import {
   BadRequestException,
   Body,
@@ -70,6 +71,14 @@ export class AppointmentsController {
     if (date_appointments) filtersAppointments.date_appointments = date_appointments;
 
     return this.appointmentsService.findAppointmentsAll(filtersAppointments);
+  }
+  //traer reservas sin filtros
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin', 'dentista') //para que roles esta permitido
+  @Get('reservas/todas')
+  //@ApiResponse({ status: 200, description: 'Listado de reservas', type: [Appointment]})
+  async getAllAppointemnts ():Promise<Appointment[]>{
+    return this.appointmentsService.getAllAppointments();
   }
   
   @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas

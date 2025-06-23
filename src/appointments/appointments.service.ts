@@ -1,3 +1,4 @@
+import { App } from 'supertest/types';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -123,6 +124,32 @@ export class AppointmentsService {
       return savedAppointment;
     });
   }
+  //Para verificar las reservas por paciente, fecha y status
+  private async verifyAppointment(
+    manager: any,
+    patient_id: number,
+    date: string,
+    startTime: string
+  ): Promise<void> {
+    const overlappingAppointment = await manager
+      .getRepository(Appointment)
+      .createQueryBuilder('a')
+      .leftJoinAndSelect('a.slot', 'slot')
+      .where('a.patient = :patientId', { patientId: patient_id })
+      .andWhere('a.date_appointments = :date', { date })
+      .andWhere('slot.startTime = :startTime', { startTime })
+      .andWhere('a.status_appointments IN (:...activeStatuses)', {
+        activeStatuses: ['pendiente', 'confirmada', 'realizada'],
+      })
+      .getOne();
+
+    if (overlappingAppointment) {
+      throw new BadRequestException(
+        'Ya existe una cita activa para este paciente en esa fecha y hora.'
+      );
+    }
+  }
+
   //Nos traemos todas las reservas sin paginar
   async findAppointmentsAll(filters: {date_appointments?: string, professional_id?:number}): Promise<AppointmentResponseDto[]> {
     const query = this.appointmentRepository
@@ -171,6 +198,12 @@ export class AppointmentsService {
         motivo_cancelacion: app.cancellation_reason_appointments ?? '',
         creado_por: app.created_by_appointments,
       };
+    });
+  }
+  //Trae todas las reservas sin filtros
+  async getAllAppointments(): Promise<Appointment[]> {
+    return this.appointmentRepository.find({
+      relations: ['patient', 'professional', 'treatment', 'slot'],
     });
   }
 
