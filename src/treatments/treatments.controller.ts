@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { UpdateTreatmentDto } from './dtos/update-treatment.dto';
 
 @ApiTags('treatments')
 @ApiBearerAuth('access-token') //Esto es solo para swagger
@@ -41,4 +43,18 @@ export class TreatmentsController {
     const newTreatment = await this.treatmentsService.createTreatment(treatmentDto);
     return res.status(201).json(newTreatment);
   }
+
+  @UseGuards(JwtAuthGuard, RolesGuard) // Protege con JWT y roles
+  @Roles('admin') // Solo accesible por rol admin
+  @Put('actualizar-tratamiento:id')
+  @ApiOperation({ summary: 'Actualiza un tratamiento por su ID' })
+  async updateTreatment(
+    @Param('id') id: number,
+    @Body() treatmentDto: UpdateTreatmentDto,
+    @Res() res: Response,
+  ): Promise<Response> {
+    const updatedTreatment = await this.treatmentsService.update(id, treatmentDto);
+    return res.status(200).json(updatedTreatment);
+  }
+
 }

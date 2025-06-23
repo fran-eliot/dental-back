@@ -1,6 +1,6 @@
-import { IsString, IsNumber, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsNumber, IsBoolean } from 'class-validator';
 
-export class CreateTreatmentDto {
+export class UpdateTreatmentDto {
   @IsString()
   name_treatments: string;
 
@@ -13,11 +13,9 @@ export class CreateTreatmentDto {
   @IsNumber()
   price_treatments: number;
 
-  @IsOptional()
   @IsBoolean()
-  visible_to_patients_treatments?: boolean;
+  visible_to_patients_treatments: boolean;
 
   @IsBoolean()
-  @IsOptional()
   is_active_treatments: boolean;
 }

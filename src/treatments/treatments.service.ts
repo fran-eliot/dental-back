@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Treatment } from './entities/treatment.entity';
 import { FindTreatmentDto } from './dtos/find-treatment.dto';
 import { CreateTreatmentDto } from './dtos/create-treatment.dto';
+import { UpdateTreatmentDto } from './dtos/update-treatment.dto';
 
 @Injectable()
 export class TreatmentsService {
@@ -29,5 +30,17 @@ export class TreatmentsService {
   async createTreatment(createTreatmentDto: CreateTreatmentDto): Promise<Treatment> {
     const newTreatment = this.treatmentRepository.create(createTreatmentDto);
     return await this.treatmentRepository.save(newTreatment);
+  }
+
+  //Actualizacion de tratamiento
+  async update(id: number, updateTreatmentDto: UpdateTreatmentDto): Promise<Treatment> {
+    const treatment = await this.treatmentRepository.findOneBy({ id_treatments: id });
+
+    if (!treatment) {
+      throw new NotFoundException(`No se encontró el tratamiento con ID ${id}`);
+    }
+
+    const updated = Object.assign(treatment, updateTreatmentDto);
+    return await this.treatmentRepository.save(updated);
   }
 }
