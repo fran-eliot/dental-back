@@ -74,6 +74,25 @@ export class ProfessionalsService {
       .map(pro => new FindProfessionalDto(pro.id_professionals, pro.nif_professionals, pro.license_number_professionals, pro.name_professionals, pro.last_name_professionals,pro.phone_professionals, pro.email_professionals, pro.assigned_room_professionals, pro.is_active_professionals));
   }
 
+  // Traer solo profesionales activos
+  async findActiveProfessionals(): Promise<FindProfessionalDto[]> {
+    const activos = await this.professionalRepository.find({
+      where: { is_active_professionals: true }
+    });
+
+    return activos.map(pro => new FindProfessionalDto(
+      pro.id_professionals,
+      pro.nif_professionals,
+      pro.license_number_professionals,
+      pro.name_professionals,
+      pro.last_name_professionals,
+      pro.phone_professionals,
+      pro.email_professionals,
+      pro.assigned_room_professionals,
+      pro.is_active_professionals
+    ));
+  }
+
   async findProfessionalByUserId(user_id: number): Promise<FindProfessionalDto> {
     const professional = await this.professionalRepository.findOne({
       where: { user: { id_users: user_id } },
