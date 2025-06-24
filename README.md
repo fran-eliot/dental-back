@@ -1,14 +1,27 @@
 # 🦷 Clínica Dental – Backend API
 
-![NestJS](https://img.shields.io/badge/NestJS-Backend-red)
-![MySQL](https://img.shields.io/badge/MySQL-Database-blue)
-![License](https://img.shields.io/badge/license-Educational-lightgrey)
+![Node.js](https://img.shields.io/badge/Node.js-20.x-green?logo=node.js&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-9.x-red?logo=nestjs&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.x-blue?logo=mysql&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT-yellow?logo=jsonwebtokens)
+![Swagger](https://img.shields.io/badge/API-Swagger-85EA2D?logo=swagger&logoColor=black)
+![TypeORM](https://img.shields.io/badge/ORM-TypeORM-lightgrey?logo=typescript)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)
+![License](https://img.shields.io/badge/Licencia-Educativa-lightgrey)
+![Estado](https://img.shields.io/badge/Estado-En%20Desarrollo-orange)
+![npm](https://img.shields.io/badge/npm-10.x-CB3837?logo=npm)
+![ESLint](https://img.shields.io/badge/code_style-ESLint-purple?logo=eslint)
+![Prettier](https://img.shields.io/badge/formatter-Prettier-F7B93E?logo=prettier)
+![Postman](https://img.shields.io/badge/Tested_with-Postman-orange?logo=postman)
 
 Este repositorio contiene el backend de una aplicación de gestión de citas para una clínica dental. Está desarrollado con [NestJS](https://nestjs.com/) y utiliza una base de datos relacional MySQL, conectada a través de TypeORM.
 
 ---
 
 ## ⚙️ Tecnologías utilizadas
+
+
+El backend de la aplicación está construido con **NestJS** y una serie de librerías modernas que permiten una arquitectura robusta, segura y escalable.
 
 - **Framework:** NestJS
 - **Base de datos:** MySQL
@@ -18,7 +31,43 @@ Este repositorio contiene el backend de una aplicación de gestión de citas par
 - **Documentación de la API:** Swagger (`http://localhost:3000/api`)
 - **Gestor de paquetes:** npm
 
+
+### 📦 Dependencias principales
+
+| Paquete                      | Descripción                                                                 |
+|-----------------------------|-----------------------------------------------------------------------------|
+| **@nestjs/core**, **common**, **platform-express** | Núcleo del framework NestJS, basado en módulos y decoradores.         |
+| **@nestjs/config**          | Gestión centralizada de configuración y variables de entorno (.env).        |
+| **@nestjs/typeorm**         | Integración de TypeORM con NestJS. ORM para trabajar con MySQL.             |
+| **mysql2**                  | Driver oficial para conexión a MySQL.                                       |
+| **@nestjs/jwt**, **passport-jwt** | Implementación de autenticación basada en JWT.                        |
+| **@nestjs/passport**, **passport** | Estrategia Passport para NestJS.                                      |
+| **@nestjs/swagger**, **swagger-ui-express** | Documentación automática e interactiva de la API.              |
+| **bcrypt**                  | Hashing seguro de contraseñas.                                              |
+| **class-validator**         | Validación automática de DTOs (Data Transfer Objects).                     |
+| **class-transformer**       | Transformación de objetos según clases definidas.                          |
+| **dayjs**                   | Manejo ligero y moderno de fechas.                                          |
+| **reflect-metadata**        | Permite el uso de decoradores en TypeScript.                               |
+| **rxjs**                    | Programación reactiva. Base de los controladores en NestJS.                 |
+| **typeorm**                 | ORM para definir entidades, relaciones, migraciones, etc.                   |
+
 ---
+
+### 🧪 Dependencias de desarrollo (devDependencies)
+
+| Paquete           | Descripción                                                             |
+|------------------|-------------------------------------------------------------------------|
+| **@nestjs/cli**   | CLI oficial para generación y gestión del proyecto NestJS.              |
+| **@types/**       | Tipados necesarios para paquetes externos usados con TypeScript.        |
+| **@typescript-eslint/** | Integración entre ESLint y TypeScript para análisis de código.   |
+| **ESLint**        | Herramienta de linting para mantener estilo y calidad del código.       |
+| **Prettier**      | Formateador automático de código coherente y legible.                   |
+| **ts-node**       | Permite ejecutar directamente código TypeScript sin compilar.           |
+| **tsconfig-paths**| Soporte para path aliases definidos en tsconfig.                        |
+| **typescript**    | Lenguaje principal de desarrollo.                                       |
+
+---
+
 
 ## 🏥 Modelo de datos
 
