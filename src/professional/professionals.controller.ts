@@ -15,6 +15,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { FindProfessionalDto } from './dto/find-professional.dto';
 
 @ApiTags('professionals')
 @ApiBearerAuth('access-token') //Esto es solo para swagger
@@ -45,6 +46,15 @@ export class ProfessionalsController {
   @ApiOperation({ summary: 'Obtenemos todos los profesionales' })
   findAllProfessionals() {
     return this.professionalsService.findAllProfessionals();
+  }
+
+  //Traemos los profesionales activos
+  @UseGuards(JwtAuthGuard, RolesGuard)//para proteger rutas
+  @Roles('admin', 'dentista') //para que roles esta permitido
+  @ApiOperation({ summary: 'Obtenemos los profesionales activos' })
+  @Get('activos')
+  async getActiveProfessionals(): Promise<FindProfessionalDto[]> {
+    return this.professionalsService.findActiveProfessionals();
   }
 
   @Get('por-user/:userId')
