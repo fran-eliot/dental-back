@@ -1,39 +1,86 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+![NestJS](https://img.shields.io/badge/NestJS-Backend-red)
+![MySQL](https://img.shields.io/badge/MySQL-Database-blue)
+![License](https://img.shields.io/badge/license-Educational-lightgrey)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# 🦷 Clínica Dental – Backend API
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Este repositorio contiene el backend de una aplicación de gestión de citas para una clínica dental. Está desarrollado con [NestJS](https://nestjs.com/) y utiliza una base de datos relacional MySQL, conectada a través de TypeORM.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## ⚙️ Tecnologías utilizadas
 
-## Project setup
+- **Framework:** NestJS
+- **Base de datos:** MySQL
+- **ORM:** TypeORM
+- **Autenticación:** JWT
+- **Control de acceso:** Por roles (`admin`, `dentista`)
+- **Documentación de la API:** Swagger (`http://localhost:3000/api`)
+- **Gestor de paquetes:** npm
+
+---
+
+## 🏥 Modelo de datos
+
+El modelo de datos está definido en el siguiente Diagrama de Entidad-Relación (DER), generado con **MySQL Workbench**:
+
+![Modelo ER](docs/DER_clinica_dental.png)
+
+### 🧱 Entidades principales
+
+- `users`: Usuarios del sistema con credenciales, roles y estado.
+- `professionals`: Profesionales de la clínica (asociados a un `user`).
+- `patients`: Pacientes que pueden tener citas registradas.
+- `appointments`: Citas médicas con fecha, duración, profesional, paciente, tratamiento y estado.
+- `availabilities`: Disponibilidades por profesional y fecha, divididas en `slots`.
+- `slots`: Franjas horarias fijas del día (ej. 10:00–10:30).
+- `treatments`: Tratamientos dentales ofrecidos.
+
+---
+
+### 🔁 Relaciones entre entidades
+
+- `users` ⟶ `professionals` → **OneToMany**
+- `professionals` ⟶ `availabilities` → **OneToMany**
+- `patients` ⟶ `appointments` → **OneToMany**
+- `professionals` ⟶ `appointments` → **OneToMany**
+- `treatments` ⟶ `appointments` → **OneToMany**
+- `slots` ⟶ `availabilities` → **OneToMany**
+- `slots` ⟶ `appointments` → **OneToMany**
+
+---
+
+### 📚 Valores ENUM
+
+- `status_appointments`: `Pendiente`, `Confirmada`, `Realizada`, `Cancelada`
+- `rol_users`: `admin`, `dentista` (⚠️ futura mejora: `paciente`)
+- `status_availability`: `Libre`, `Ocupado`, `No Disponible`
+- `period`: `Mañana`, `Tarde`
+- `created_by_appointments`: `user` (actualmente siempre `admin`)
+
+---
+
+## 🧪 Requisitos previos
+
+- Node.js >= 18
+- npm >= 9
+- MySQL >= 8
+
+---
+
+## 🚀 Instalación y ejecución
 
 ```bash
-$ npm install
-```
+# Clona el repositorio
+git clone https://github.com/tuusuario/backend-clinica-dental.git
+cd backend-clinica-dental
 
-## Compile and run the project
+# Instala dependencias
+npm install
 
-```bash
+# Crea un archivo .env con la configuración necesaria (base de datos, JWT, etc.)
+
+# Ejecuta el proyecto
 # development
 $ npm run start
 
@@ -43,56 +90,158 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+La API estará disponible en:
+📍 http://localhost:3000
 
-## Run tests
+La documentación Swagger está disponible en:
+📚 http://localhost:3000/api
+---
 
-```bash
-# unit tests
-$ npm run test
+## 📄 Configuración .env
 
-# e2e tests
-$ npm run test:e2e
+- Debes crear un archivo .env en la raíz del proyecto con las siguientes variables:
 
-# test coverage
-$ npm run test:cov
-```
+JWT_SECRET: 'my-secret-key'
 
-## Deployment
+⚠️ Asegúrate de que tu base de datos clinica_dental esté creada previamente en MySQL.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 🔐 Autenticación y roles
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+- Autenticación basada en JWT.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- Al hacer login, el backend devuelve un token que debe incluirse en la cabecera Authorization para acceder a endpoints protegidos.
 
-## Resources
+Authorization: Bearer <tu_token_jwt>
 
-Check out a few resources that may come in handy when working with NestJS:
+- Control de acceso por roles (admin, dentista) para limitar el uso de funcionalidades según el tipo de usuario.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📡 Endpoints principales
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+🔹 Auth
 
-## Stay in touch
+| Método | Endpoint      | Descripción                |
+| ------ | ------------- | -------------------------- |
+| POST   | `/auth/login` | Autenticación mediante JWT |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-## License
+🔹 Users
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+| Método | Endpoint                     | Descripción                |
+| ------ | ---------------------------- | -------------------------- |
+| POST   | `/users/alta`                | Alta de usuario            |
+| GET    | `/users`                     | Obtener todos los usuarios |
+| GET    | `/users/buscar/:id`          | Obtener usuario por ID     |
+| PATCH  | `/users/:id/update_password` | Cambiar contraseña         |
+| PATCH  | `/users/:id/rol_users`       | Cambiar rol de usuario     |
+| PATCH  | `/users/:id/toggle_status`   | Activar/desactivar usuario |
+| PATCH  | `/users/:id/username`        | Cambiar username           |
+
+🔹 Patients
+
+| Método | Endpoint                 | Descripción                         |
+| ------ | ------------------------ | ----------------------------------- |
+| GET    | `/patients/all`          | Listar todos los pacientes          |
+| GET    | `/patients/search/:term` | Buscar por nombre, apellido o email |
+| POST   | `/patients/alta`         | Crear nuevo paciente                |
+| PUT    | `/patients/update/:id`   | Actualizar paciente                 |
+
+
+🔹 Professionals
+
+| Método | Endpoint                                         | Descripción                    |
+| ------ | ------------------------------------------------ | ------------------------------ |
+| POST   | `/professionals/alta`                            | Alta de profesional            |
+| PUT    | `/professionals/actualizacion/:id_professionals` | Actualizar profesional         |
+| GET    | `/professionals/all`                             | Listar todos los profesionales |
+| GET    | `/professionals/por-user/:userId`                | Buscar por ID de usuario       |
+
+
+🔹 Appointments (Reservas)
+
+| Método | Endpoint                              | Descripción                          |
+| ------ | ------------------------------------- | ------------------------------------ |
+| POST   | `/appointments/nuevaReserva`          | Crear nueva reserva                  |
+| GET    | `/appointments/reservas`              | Reservas del profesional autenticado |
+| GET    | `/appointments/reservas/all`          | Todas las reservas                   |
+| GET    | `/appointments/reservas/todas`        | Todas las reservas (sin filtros)     |
+| GET    | `/appointments/reservas-por-fechas`   | Buscar por rango de fechas           |
+| GET    | `/appointments/history/:patientId`    | Historial de citas de un paciente    |
+| PATCH  | `/appointments/actualizar-estado/:id` | Cambiar estado de la cita            |
+
+
+🔹 Disponibilidades
+
+| Método | Endpoint                                               | Descripción                                      |
+| ------ | ------------------------------------------------------ | ------------------------------------------------ |
+| POST   | `/disponibilidades/genera-semana`                      | Generar para semana actual                       |
+| POST   | `/disponibilidades/genera-mes`                         | Generar para un mes                              |
+| GET    | `/disponibilidades/:professionalId/:date`              | Obtener disponibilidades por fecha               |
+| PATCH  | `/disponibilidades/:id`                                | Cambiar estado de disponibilidad                 |
+| GET    | `/disponibilidades/slots-libres/:professionalId/:date` | Slots disponibles para profesional en fecha      |
+| DELETE | `/disponibilidades/limpieza/:beforeDate`               | Eliminar disponibilidades anteriores a una fecha |
+
+
+🔹 Treatments
+
+| Método | Endpoint                                  | Descripción             |
+| ------ | ------------------------------------------| ----------------------- |
+| GET    | `/treatments/all`                         | Obtener tratamientos    |
+| POST   | `/treatments/alta`                        | Crear tratamiento nuevo |
+| PUT    | `/treatments/actualizar-tratamiento/:id`  | Actualizar tratamiento  |
+
+
+---
+
+## 📁 Estructura del proyecto (simplificada)
+
+src/
+├── auth/
+├── appointments/
+├── patients/
+├── professionals/
+├── users/
+├── availabilities/
+├── treatments/
+├── slots/
+├── common/
+└── main.ts
+
+---
+
+## 📌 Notas adicionales
+
+- La eliminación de disponibilidades antiguas se realiza manualmente mediante un endpoint DELETE.
+
+- Este backend se conecta con un frontend desarrollado en Angular (dental-front), alojado en un repositorio independiente en https://github.com/fran-eliot/dental-front
+
+---
+
+## 🧩 Contribución y mejoras futuras
+
+- Añadir rol de paciente y registro/autogestión desde frontend
+
+- Panel de administración más completo
+
+- Tests automáticos
+
+- Soporte para internacionalización
+
+## 🧑‍💻 Autores
+
+Este proyecto ha sido desarrollado como parte de un sistema completo de gestión clínica dental, para el curso "Desarrollo Frontend con Angular" de Fundación Adecco.
+
+Los autores del proyecto son:
+- Ainhoa Alonso: -[Ainhoa Alonso] (https://github.com/AinhoaAlonso)
+- Fran Ramírez: -[Fran Ramírez] (https://github.com/fran-eliot)
+- Asusalin Abou: -[Asusalin Abou] (https://github.com/asusalin)
+
+---
+
+## 📄 Licencia
+
+Este proyecto ha sido desarrollado con fines educativos. No está destinado a uso comercial y no incluye una licencia explícita. Para reutilización o distribución, por favor contacta con los autores.
+
