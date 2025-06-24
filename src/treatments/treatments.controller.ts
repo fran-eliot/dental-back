@@ -46,7 +46,7 @@ export class TreatmentsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard) // Protege con JWT y roles
   @Roles('admin') // Solo accesible por rol admin
-  @Put('actualizar-tratamiento:id')
+  @Put('actualizar-tratamiento/:id')
   @ApiOperation({ summary: 'Actualiza un tratamiento por su ID' })
   async updateTreatment(
     @Param('id') id: number,
