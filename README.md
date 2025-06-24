@@ -1,8 +1,8 @@
+# 🦷 Clínica Dental – Backend API
+
 ![NestJS](https://img.shields.io/badge/NestJS-Backend-red)
 ![MySQL](https://img.shields.io/badge/MySQL-Database-blue)
 ![License](https://img.shields.io/badge/license-Educational-lightgrey)
-
-# 🦷 Clínica Dental – Backend API
 
 Este repositorio contiene el backend de una aplicación de gestión de citas para una clínica dental. Está desarrollado con [NestJS](https://nestjs.com/) y utiliza una base de datos relacional MySQL, conectada a través de TypeORM.
 
@@ -24,7 +24,7 @@ Este repositorio contiene el backend de una aplicación de gestión de citas par
 
 El modelo de datos está definido en el siguiente Diagrama de Entidad-Relación (DER), generado con **MySQL Workbench**:
 
-![Modelo ER](docs/DER_clinica_dental.png)
+![Modelo ER](./docs/DER%20clinica_dental.png)
 
 ### 🧱 Entidades principales
 
@@ -101,9 +101,9 @@ La documentación Swagger está disponible en:
 
 - Debes crear un archivo .env en la raíz del proyecto con las siguientes variables:
 
-JWT_SECRET: 'my-secret-key'
+    JWT_SECRET: 'my-secret-key'
 
-⚠️ Asegúrate de que tu base de datos clinica_dental esté creada previamente en MySQL.
+- ⚠️ Asegúrate de que tu base de datos clinica_dental esté creada previamente en MySQL.
 
 ---
 
@@ -113,7 +113,7 @@ JWT_SECRET: 'my-secret-key'
 
 - Al hacer login, el backend devuelve un token que debe incluirse en la cabecera Authorization para acceder a endpoints protegidos.
 
-Authorization: Bearer <tu_token_jwt>
+    Authorization: Bearer <tu_token_jwt>
 
 - Control de acceso por roles (admin, dentista) para limitar el uso de funcionalidades según el tipo de usuario.
 
@@ -198,6 +198,7 @@ Authorization: Bearer <tu_token_jwt>
 
 ## 📁 Estructura del proyecto (simplificada)
 
+```plaintext
 src/
 ├── auth/
 ├── appointments/
@@ -209,6 +210,7 @@ src/
 ├── slots/
 ├── common/
 └── main.ts
+```
 
 ---
 
@@ -235,13 +237,15 @@ src/
 Este proyecto ha sido desarrollado como parte de un sistema completo de gestión clínica dental, para el curso "Desarrollo Frontend con Angular" de Fundación Adecco.
 
 Los autores del proyecto son:
-- Ainhoa Alonso: -[Ainhoa Alonso] (https://github.com/AinhoaAlonso)
-- Fran Ramírez: -[Fran Ramírez] (https://github.com/fran-eliot)
-- Asusalin Abou: -[Asusalin Abou] (https://github.com/asusalin)
+- [Ainhoa Alonso](https://github.com/AinhoaAlonso)
+- [Fran Ramírez](https://github.com/fran-eliot)
+- [Asusalin Abou](https://github.com/asusalin)
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto ha sido desarrollado con fines educativos. No está destinado a uso comercial y no incluye una licencia explícita. Para reutilización o distribución, por favor contacta con los autores.
+- Este proyecto ha sido desarrollado con fines educativos. 
+- No está destinado a uso comercial y no incluye una licencia explícita. 
+- Para reutilización o distribución, por favor contacta con los autores.
 
